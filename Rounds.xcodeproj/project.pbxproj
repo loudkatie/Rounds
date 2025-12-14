@@ -3,39 +3,56 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 63;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00CAA0D3098F1307B5171BC1 /* MWDATMockDevice in Frameworks */ = {isa = PBXBuildFile; productRef = 67800147391143BE11021C09 /* MWDATMockDevice */; };
 		03AB9333F128F912DD49B090 /* STTService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF93D3FFD8451E4E2E0238A4 /* STTService.swift */; };
 		0F5624642FC3DEBF636D4E05 /* TranscriptViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCD495C8E952C21B4A0C638 /* TranscriptViewModel.swift */; };
 		28BA9ED5E2CE8D90971787EB /* RoundsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D5E2CBCF2022821DAF3EA6 /* RoundsApp.swift */; };
-		4288AB4D4FF5D86071382D91 /* GlassesSessionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E5F7466D5CA1B6D51513A37 /* GlassesSessionManager.swift */; };
+		2D291DBADF3A03529AA64912 /* MWDATCore in Frameworks */ = {isa = PBXBuildFile; productRef = F8F986E3457ED24C829F07BC /* MWDATCore */; };
 		5E370129F148FBA3AC4F0BF6 /* TranscriptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5168F8C2DCDB2CD2ED17A736 /* TranscriptView.swift */; };
 		69A03B016FF869C4CC90A447 /* RoundsEpisode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0FD0270602D1407AB230AE3 /* RoundsEpisode.swift */; };
 		78882DE3754C795C63674F68 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 19954A876539BD2B8B878A59 /* Assets.xcassets */; };
+		85998A3221AFFC0380367731 /* MWDATCamera in Frameworks */ = {isa = PBXBuildFile; productRef = 915A3C829B9327B9C12582E0 /* MWDATCamera */; };
 		95FA16A6A146191FA1E9EBCB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E70E29DB16097D12CEFCF6 /* ContentView.swift */; };
 		9B31EC270FDB58F3C1B54642 /* LlamaAgentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A13A965370EDB13CD2DADCF /* LlamaAgentService.swift */; };
 		9BB026F1AA241A915194FE47 /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36CCDF73721AA49A60ADD59 /* SummaryView.swift */; };
 		C974D6D04710797D0F069984 /* ConnectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4BF7B19B5AAD35AC592516 /* ConnectView.swift */; };
-		F9D1954D0865F1DC86D10315 /* AudioCaptureSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55AF30B3BDC4431616EE0983 /* AudioCaptureSession.swift */; };
+		E7514092C3B15CDBC4F71254 /* WearablesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AB0F01F4A0FE797488F4128 /* WearablesManager.swift */; };
+		F0E8F018418C96D6921BA79D /* AudioCaptureSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8762EA1B502FB5F43CB160C /* AudioCaptureSession.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0EAC4EC60BDCC8C3B088F0F2 /* Rounds.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Rounds.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0EAC4EC60BDCC8C3B088F0F2 /* Rounds.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Rounds.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		19954A876539BD2B8B878A59 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1A13A965370EDB13CD2DADCF /* LlamaAgentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LlamaAgentService.swift; sourceTree = "<group>"; };
 		3CCD495C8E952C21B4A0C638 /* TranscriptViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptViewModel.swift; sourceTree = "<group>"; };
 		5168F8C2DCDB2CD2ED17A736 /* TranscriptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptView.swift; sourceTree = "<group>"; };
-		55AF30B3BDC4431616EE0983 /* AudioCaptureSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioCaptureSession.swift; sourceTree = "<group>"; };
 		84D5E2CBCF2022821DAF3EA6 /* RoundsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundsApp.swift; sourceTree = "<group>"; };
-		9E5F7466D5CA1B6D51513A37 /* GlassesSessionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassesSessionManager.swift; sourceTree = "<group>"; };
+		9AB0F01F4A0FE797488F4128 /* WearablesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WearablesManager.swift; sourceTree = "<group>"; };
 		B36CCDF73721AA49A60ADD59 /* SummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
 		CA4BF7B19B5AAD35AC592516 /* ConnectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectView.swift; sourceTree = "<group>"; };
+		CBADB6C24348E9029BB6D22C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		D0FD0270602D1407AB230AE3 /* RoundsEpisode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundsEpisode.swift; sourceTree = "<group>"; };
 		EF93D3FFD8451E4E2E0238A4 /* STTService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STTService.swift; sourceTree = "<group>"; };
 		F0E70E29DB16097D12CEFCF6 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		F8762EA1B502FB5F43CB160C /* AudioCaptureSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioCaptureSession.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		00CB555CF6DF8F44C676EA73 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2D291DBADF3A03529AA64912 /* MWDATCore in Frameworks */,
+				85998A3221AFFC0380367731 /* MWDATCamera in Frameworks */,
+				00CAA0D3098F1307B5171BC1 /* MWDATMockDevice in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		0AA0126481C322DABE02BD55 /* Views */ = {
@@ -69,14 +86,24 @@
 			children = (
 				19954A876539BD2B8B878A59 /* Assets.xcassets */,
 				F0E70E29DB16097D12CEFCF6 /* ContentView.swift */,
+				CBADB6C24348E9029BB6D22C /* Info.plist */,
 				84D5E2CBCF2022821DAF3EA6 /* RoundsApp.swift */,
-				F7A3C7F1B3861CAA34B900DA /* Managers */,
+				91934535B4D5F0744EF42456 /* DeviceManagers */,
 				4C3B9B40DFD9050BA73AAEDF /* Models */,
 				E22EEED703755F5114161C58 /* Services */,
 				95157335467B16649E402B10 /* ViewModels */,
 				0AA0126481C322DABE02BD55 /* Views */,
 			);
 			path = Rounds;
+			sourceTree = "<group>";
+		};
+		91934535B4D5F0744EF42456 /* DeviceManagers */ = {
+			isa = PBXGroup;
+			children = (
+				F8762EA1B502FB5F43CB160C /* AudioCaptureSession.swift */,
+				9AB0F01F4A0FE797488F4128 /* WearablesManager.swift */,
+			);
+			path = DeviceManagers;
 			sourceTree = "<group>";
 		};
 		95157335467B16649E402B10 /* ViewModels */ = {
@@ -104,15 +131,6 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
-		F7A3C7F1B3861CAA34B900DA /* Managers */ = {
-			isa = PBXGroup;
-			children = (
-				55AF30B3BDC4431616EE0983 /* AudioCaptureSession.swift */,
-				9E5F7466D5CA1B6D51513A37 /* GlassesSessionManager.swift */,
-			);
-			path = Managers;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -122,6 +140,7 @@
 			buildPhases = (
 				E5A407556011D787FEC3F60E /* Sources */,
 				9F1A71954020F81141F92ABE /* Resources */,
+				00CB555CF6DF8F44C676EA73 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -129,9 +148,9 @@
 			);
 			name = Rounds;
 			packageProductDependencies = (
-				E21665FB2EE88CBB007C48CC /* MWDATCamera */,
-				E21665FC2EE88CBB007C48CC /* MWDATCore */,
-				E21665FD2EE88CBB007C48CC /* MWDATMockDevice */,
+				F8F986E3457ED24C829F07BC /* MWDATCore */,
+				915A3C829B9327B9C12582E0 /* MWDATCamera */,
+				67800147391143BE11021C09 /* MWDATMockDevice */,
 			);
 			productName = Rounds;
 			productReference = 0EAC4EC60BDCC8C3B088F0F2 /* Rounds.app */;
@@ -145,6 +164,11 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					F4FA1360E92AC114D0407EFF = {
+						DevelopmentTeam = VR88MM2R4N;
+					};
+				};
 			};
 			buildConfigurationList = E7995D876C3C407D3EC12A5A /* Build configuration list for PBXProject "Rounds" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -157,8 +181,9 @@
 			mainGroup = 60060F953C97F37EBC5A7742;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				E21665FA2EE88CBB007C48CC /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */,
+				E300F4F95AD7C60E21638D3E /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */,
 			);
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -183,10 +208,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F9D1954D0865F1DC86D10315 /* AudioCaptureSession.swift in Sources */,
+				F0E8F018418C96D6921BA79D /* AudioCaptureSession.swift in Sources */,
 				C974D6D04710797D0F069984 /* ConnectView.swift in Sources */,
 				95FA16A6A146191FA1E9EBCB /* ContentView.swift in Sources */,
-				4288AB4D4FF5D86071382D91 /* GlassesSessionManager.swift in Sources */,
 				9B31EC270FDB58F3C1B54642 /* LlamaAgentService.swift in Sources */,
 				28BA9ED5E2CE8D90971787EB /* RoundsApp.swift in Sources */,
 				69A03B016FF869C4CC90A447 /* RoundsEpisode.swift in Sources */,
@@ -194,6 +218,7 @@
 				9BB026F1AA241A915194FE47 /* SummaryView.swift in Sources */,
 				5E370129F148FBA3AC4F0BF6 /* TranscriptView.swift in Sources */,
 				0F5624642FC3DEBF636D4E05 /* TranscriptViewModel.swift in Sources */,
+				E7514092C3B15CDBC4F71254 /* WearablesManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -206,9 +231,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = VR88MM2R4N;
+				INFOPLIST_FILE = Rounds/Info.plist;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Rounds connects to Meta glasses via Bluetooth";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Rounds connects to Meta glasses via Bluetooth";
-				INFOPLIST_KEY_NSBluetoothWhileInUseUsageDescription = "Rounds connects to Meta glasses via Bluetooth. ";
+				INFOPLIST_KEY_NSBluetoothWhileInUseUsageDescription = "Rounds connects to Meta glasses via Bluetooth";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Rounds needs microphone access to transcribe your conversations";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Rounds uses speech recognition to create live transcripts";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -353,9 +379,10 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = VR88MM2R4N;
+				INFOPLIST_FILE = Rounds/Info.plist;
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Rounds connects to Meta glasses via Bluetooth";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Rounds connects to Meta glasses via Bluetooth";
-				INFOPLIST_KEY_NSBluetoothWhileInUseUsageDescription = "Rounds connects to Meta glasses via Bluetooth. ";
+				INFOPLIST_KEY_NSBluetoothWhileInUseUsageDescription = "Rounds connects to Meta glasses via Bluetooth";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Rounds needs microphone access to transcribe your conversations";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Rounds uses speech recognition to create live transcripts";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -397,7 +424,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		E21665FA2EE88CBB007C48CC /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */ = {
+		E300F4F95AD7C60E21638D3E /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/facebook/meta-wearables-dat-ios";
 			requirement = {
@@ -408,20 +435,20 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		E21665FB2EE88CBB007C48CC /* MWDATCamera */ = {
+		67800147391143BE11021C09 /* MWDATMockDevice */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E21665FA2EE88CBB007C48CC /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */;
+			package = E300F4F95AD7C60E21638D3E /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */;
+			productName = MWDATMockDevice;
+		};
+		915A3C829B9327B9C12582E0 /* MWDATCamera */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E300F4F95AD7C60E21638D3E /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */;
 			productName = MWDATCamera;
 		};
-		E21665FC2EE88CBB007C48CC /* MWDATCore */ = {
+		F8F986E3457ED24C829F07BC /* MWDATCore */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E21665FA2EE88CBB007C48CC /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */;
+			package = E300F4F95AD7C60E21638D3E /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */;
 			productName = MWDATCore;
-		};
-		E21665FD2EE88CBB007C48CC /* MWDATMockDevice */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = E21665FA2EE88CBB007C48CC /* XCRemoteSwiftPackageReference "meta-wearables-dat-ios" */;
-			productName = MWDATMockDevice;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

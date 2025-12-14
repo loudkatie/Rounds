@@ -1,7 +1,6 @@
 import Foundation
 import Combine
 import Speech
-import WearablesDeviceAccess
 
 @MainActor
 final class TranscriptViewModel: ObservableObject {
@@ -16,18 +15,17 @@ final class TranscriptViewModel: ObservableObject {
 
     // MARK: - Dependencies
 
-    let glassesManager: GlassesSessionManager
+    var wearablesManager: WearablesManager
     let audioCapture: AudioCaptureSession
     let sttService: STTService
     private let llamaService = LlamaAgentService.shared
 
     private var lastCommittedText: String = ""
-    private var currentSession: WearableDeviceSession?
 
     // MARK: - Initialization
 
     init() {
-        self.glassesManager = GlassesSessionManager()
+        self.wearablesManager = WearablesManager.shared
         self.audioCapture = AudioCaptureSession()
         self.sttService = STTService()
 
@@ -41,9 +39,9 @@ final class TranscriptViewModel: ObservableObject {
             }
         }
 
-        glassesManager.onAudioStreamReady = { [weak self] session in
+        wearablesManager.onConnectionReady = { [weak self] in
             Task { @MainActor in
-                self?.currentSession = session
+                print("[TranscriptViewModel] Glasses connection ready")
             }
         }
     }
@@ -52,12 +50,6 @@ final class TranscriptViewModel: ObservableObject {
 
     func startSession() async {
         guard !isSessionActive else { return }
-
-        // Verify we have a glasses session
-        guard let session = currentSession else {
-            errorMessage = "No glasses connected. Please connect your glasses first."
-            return
-        }
 
         // Request speech recognition permission
         let authorized = await sttService.requestAuthorization()
@@ -73,11 +65,11 @@ final class TranscriptViewModel: ObservableObject {
         summary = nil
         errorMessage = nil
 
-        // Start STT and get recognition request
-        let recognitionRequest = sttService.startTranscription()
+        // Start STT
+        _ = sttService.startTranscription()
 
-        // Start audio capture from glasses session
-        audioCapture.startCapture(from: session, with: recognitionRequest)
+        // Start audio capture from iPhone mic
+        audioCapture.startCapture()
 
         isSessionActive = true
     }

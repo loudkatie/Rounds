@@ -135,7 +135,8 @@ struct TranscriptView: View {
     private var controlsView: some View {
         HStack(spacing: 20) {
             // Device info
-            if let device = viewModel.glassesManager.connectedDevice {
+            if viewModel.wearablesManager.connectionState == .registered,
+               let device = viewModel.wearablesManager.connectedDevice {
                 HStack(spacing: 6) {
                     Image(systemName: "eyeglasses")
                         .foregroundStyle(.green)

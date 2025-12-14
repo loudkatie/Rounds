@@ -10,15 +10,29 @@ settings:
     SWIFT_VERSION: "5.9"
     GENERATE_INFOPLIST_FILE: YES
 
+packages:
+  MetaWearablesDAT:
+    url: https://github.com/facebook/meta-wearables-dat-ios
+    from: "0.2.1"
+
 targets:
   Rounds:
     type: application
     platform: iOS
     sources:
       - path: Rounds
+    dependencies:
+      - package: MetaWearablesDAT
+        product: MWDATCore
+      - package: MetaWearablesDAT
+        product: MWDATCamera
+      - package: MetaWearablesDAT
+        product: MWDATMockDevice
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.rounds.app
+        DEVELOPMENT_TEAM: VR88MM2R4N
+        CODE_SIGN_IDENTITY: "iPhone Developer"
         INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
         INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
@@ -28,3 +42,28 @@ targets:
         INFOPLIST_KEY_NSSpeechRecognitionUsageDescription: "Rounds uses speech recognition to create live transcripts"
         INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription: "Rounds connects to Meta glasses via Bluetooth"
         INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription: "Rounds connects to Meta glasses via Bluetooth"
+        INFOPLIST_KEY_NSBluetoothWhileInUseUsageDescription: "Rounds connects to Meta glasses via Bluetooth"
+    info:
+      path: Rounds/Info.plist
+      properties:
+        # Meta Wearables SDK - URL Scheme for OAuth callbacks
+        CFBundleURLTypes:
+          - CFBundleTypeRole: Editor
+            CFBundleURLName: com.rounds.app
+            CFBundleURLSchemes:
+              - rounds
+        # Meta Wearables SDK - Required to query Meta View app
+        LSApplicationQueriesSchemes:
+          - fb-viewapp
+        # Meta Wearables SDK - External accessory protocol
+        UISupportedExternalAccessoryProtocols:
+          - com.meta.ar.wearable
+        # Meta Wearables SDK - Background modes
+        UIBackgroundModes:
+          - bluetooth-peripheral
+          - external-accessory
+          - audio
+        # Meta Wearables SDK - MWDAT Configuration
+        MWDAT:
+          AppLinkURLScheme: "rounds://"
+          MetaAppID: "25432101813066488"

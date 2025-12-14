@@ -29,7 +29,7 @@ struct ConnectView: View {
             connectionStatusView
 
             // Device List
-            if !viewModel.glassesManager.availableDevices.isEmpty {
+            if !viewModel.wearablesManager.availableDevices.isEmpty {
                 deviceListView
             }
 
@@ -41,6 +41,13 @@ struct ConnectView: View {
             Spacer()
         }
         .padding()
+        .alert("Connection Error", isPresented: $viewModel.wearablesManager.showError) {
+            Button("OK") {
+                viewModel.wearablesManager.dismissError()
+            }
+        } message: {
+            Text(viewModel.wearablesManager.errorMessage)
+        }
     }
 
     @ViewBuilder
@@ -56,20 +63,25 @@ struct ConnectView: View {
 
     @ViewBuilder
     private var statusIndicator: some View {
-        switch viewModel.glassesManager.connectionState {
-        case .disconnected:
+        switch viewModel.wearablesManager.connectionState {
+        case .unavailable:
             Circle()
                 .fill(.gray)
                 .frame(width: 12, height: 12)
-        case .scanning:
+        case .available:
+            Circle()
+                .fill(.blue)
+                .frame(width: 12, height: 12)
+        case .registering:
             ProgressView()
                 .scaleEffect(0.8)
-        case .connecting:
-            ProgressView()
-                .scaleEffect(0.8)
-        case .connected:
+        case .registered:
             Circle()
                 .fill(.green)
+                .frame(width: 12, height: 12)
+        case .notReady:
+            Circle()
+                .fill(.orange)
                 .frame(width: 12, height: 12)
         case .error:
             Circle()
@@ -80,18 +92,18 @@ struct ConnectView: View {
 
     @ViewBuilder
     private var statusText: some View {
-        switch viewModel.glassesManager.connectionState {
-        case .disconnected:
-            Text("Not connected")
+        switch viewModel.wearablesManager.connectionState {
+        case .unavailable:
+            Text("Initializing...")
                 .foregroundStyle(.secondary)
-        case .scanning:
-            Text("Scanning for devices...")
+        case .available:
+            Text("Ready to connect")
                 .foregroundStyle(.secondary)
-        case .connecting:
-            Text("Connecting...")
+        case .registering:
+            Text("Connecting via Meta app...")
                 .foregroundStyle(.secondary)
-        case .connected:
-            if let device = viewModel.glassesManager.connectedDevice {
+        case .registered:
+            if let device = viewModel.wearablesManager.connectedDevice {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(device.name)
                         .fontWeight(.medium)
@@ -104,18 +116,29 @@ struct ConnectView: View {
             } else {
                 Text("Connected")
             }
+        case .notReady(let reason):
+            Text(reason.userMessage)
+                .foregroundStyle(.orange)
+                .lineLimit(3)
+                .font(.subheadline)
         case .error(let message):
             Text(message)
                 .foregroundStyle(.red)
+                .lineLimit(2)
+                .font(.caption)
         }
     }
 
     private var statusBackground: Color {
-        switch viewModel.glassesManager.connectionState {
-        case .connected:
+        switch viewModel.wearablesManager.connectionState {
+        case .registered:
             return .green.opacity(0.1)
         case .error:
             return .red.opacity(0.1)
+        case .notReady:
+            return .orange.opacity(0.1)
+        case .available:
+            return .blue.opacity(0.1)
         default:
             return .gray.opacity(0.1)
         }
@@ -124,13 +147,13 @@ struct ConnectView: View {
     @ViewBuilder
     private var deviceListView: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Available Devices")
+            Text("Connected Devices")
                 .font(.headline)
                 .padding(.horizontal)
 
-            ForEach(viewModel.glassesManager.availableDevices, id: \.id) { device in
+            ForEach(viewModel.wearablesManager.availableDevices, id: \.id) { device in
                 Button {
-                    viewModel.glassesManager.connect(to: device)
+                    viewModel.wearablesManager.connect(to: device)
                 } label: {
                     HStack {
                         Image(systemName: "eyeglasses")
@@ -143,8 +166,13 @@ struct ConnectView: View {
                                 .foregroundStyle(.secondary)
                         }
                         Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundStyle(.secondary)
+                        if viewModel.wearablesManager.connectedDevice?.id == device.id {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundStyle(.green)
+                        } else {
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(.secondary)
+                        }
                     }
                     .padding()
                     .background(Color(.systemBackground))
@@ -159,12 +187,55 @@ struct ConnectView: View {
 
     @ViewBuilder
     private var actionButton: some View {
-        switch viewModel.glassesManager.connectionState {
-        case .disconnected, .error:
+        switch viewModel.wearablesManager.connectionState {
+        case .unavailable:
+            VStack(spacing: 12) {
+                ProgressView()
+                Text("Setting up...")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal)
+
+        case .notReady(let reason):
+            VStack(spacing: 12) {
+                // Primary action: Open Meta View
+                Button {
+                    viewModel.wearablesManager.openMetaView()
+                } label: {
+                    Label("Open Meta View", systemImage: "arrow.up.forward.app")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(.orange)
+                        .foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+
+                // Secondary action: Retry after connecting
+                Button {
+                    viewModel.wearablesManager.retryConfiguration()
+                } label: {
+                    Label("Connect Glasses", systemImage: "antenna.radiowaves.left.and.right")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(.blue)
+                        .foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+
+                if reason == .metaViewNotInstalled {
+                    Text("Install Meta View from the App Store first")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .padding(.horizontal)
+
+        case .available, .error:
             Button {
-                viewModel.glassesManager.startScanning()
+                viewModel.wearablesManager.startRegistration()
             } label: {
-                Label("Scan for Glasses", systemImage: "antenna.radiowaves.left.and.right")
+                Label("Connect Glasses", systemImage: "antenna.radiowaves.left.and.right")
                     .frame(maxWidth: .infinity)
                     .padding()
                     .background(.blue)
@@ -173,33 +244,42 @@ struct ConnectView: View {
             }
             .padding(.horizontal)
 
-        case .scanning:
-            Button {
-                viewModel.glassesManager.stopScanning()
-            } label: {
-                Label("Stop Scanning", systemImage: "xmark")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(.gray)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+        case .registering:
+            VStack(spacing: 12) {
+                ProgressView()
+                Text("Opening Meta app...")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+
+                Button {
+                    viewModel.wearablesManager.stopScanning()
+                } label: {
+                    Text("Cancel")
+                        .foregroundStyle(.secondary)
+                }
             }
-            .padding(.horizontal)
+            .padding()
 
-        case .connecting:
-            ProgressView("Connecting...")
-                .padding()
+        case .registered:
+            VStack(spacing: 12) {
+                Button {
+                    showTranscript = true
+                } label: {
+                    Label("Start Session", systemImage: "mic.fill")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(.green)
+                        .foregroundStyle(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
 
-        case .connected:
-            Button {
-                showTranscript = true
-            } label: {
-                Label("Start Session", systemImage: "mic.fill")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(.green)
-                    .foregroundStyle(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                Button {
+                    viewModel.wearablesManager.disconnect()
+                } label: {
+                    Text("Disconnect")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
             }
             .padding(.horizontal)
         }
