@@ -33,9 +33,9 @@
 	<string>1</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
-		<string>fb-viewapp</string>
-		<string>fb-metaview</string>
-		<string>metaview</string>
+		<string>fb-orca</string>
+		<string>fb-messenger-api</string>
+		<string>metaai</string>
 	</array>
 	<key>MWDAT</key>
 	<dict>

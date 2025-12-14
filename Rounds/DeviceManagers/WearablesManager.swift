@@ -10,7 +10,7 @@ enum GlassesConnectionState: Equatable {
     case available
     case registering
     case registered
-    case notReady(NotReadyReason)  // Glasses/Meta View not ready (soft state, not an error)
+    case notReady(NotReadyReason)  // Glasses/Meta AI app not ready (soft state, not an error)
     case error(String)             // Real configuration error (plist/portal issue)
 
     var isConnected: Bool {
@@ -34,11 +34,11 @@ enum NotReadyReason: Equatable {
     var userMessage: String {
         switch self {
         case .metaViewNotInstalled:
-            return "Meta View app not installed. Install it from the App Store to continue."
+            return "Meta AI app not installed. Install it from the App Store to continue."
         case .glassesNotPaired:
-            return "Glasses not paired. Open Meta View and pair your glasses first."
+            return "Glasses not paired. Open Meta AI and pair your glasses first."
         case .glassesNotConnected, .glassesAsleep, .unknown:
-            return "Glasses not connected yet. Open Meta View, connect your glasses, then tap Connect Glasses."
+            return "Glasses not connected yet. Open Meta AI, wake your glasses, then tap Connect Glasses."
         }
     }
 }
@@ -115,7 +115,7 @@ final class WearablesManager: ObservableObject {
     /// Configure the MWDATCore SDK. Call this once at app launch.
     func configure() {
         print("[WearablesManager] === SDK Configuration Starting ===")
-        logMetaViewStatus()
+        logMetaAIStatus()
 
         do {
             try Wearables.configure()
@@ -130,24 +130,24 @@ final class WearablesManager: ObservableObject {
         }
     }
 
-    /// Known URL schemes for Meta View app
-    private static let metaViewSchemes = ["fb-viewapp://", "fb-metaview://", "metaview://"]
+    /// Known URL schemes for Meta AI app (handles glasses pairing/auth)
+    private static let metaAISchemes = ["fb-orca://", "fb-messenger-api://", "metaai://"]
 
-    /// Log Meta View app installation status
-    private func logMetaViewStatus() {
-        // Check if Meta View app can be opened (requires LSApplicationQueriesSchemes in Info.plist)
-        var canOpenMetaView = false
+    /// Log Meta AI app installation status
+    private func logMetaAIStatus() {
+        // Check if Meta AI app can be opened (requires LSApplicationQueriesSchemes in Info.plist)
+        var canOpenMetaAI = false
 
-        for scheme in Self.metaViewSchemes {
+        for scheme in Self.metaAISchemes {
             if let url = URL(string: scheme), UIApplication.shared.canOpenURL(url) {
-                print("[WearablesManager] 📱 Meta View detected via scheme: \(scheme)")
-                canOpenMetaView = true
+                print("[WearablesManager] 📱 Meta AI detected via scheme: \(scheme)")
+                canOpenMetaAI = true
                 break
             }
         }
 
-        if !canOpenMetaView {
-            print("[WearablesManager] ⚠️ Meta View app not detected (may need LSApplicationQueriesSchemes or app not installed)")
+        if !canOpenMetaAI {
+            print("[WearablesManager] ⚠️ Meta AI app not detected (may need LSApplicationQueriesSchemes or app not installed)")
         }
     }
 
@@ -158,15 +158,15 @@ final class WearablesManager: ObservableObject {
         print("[WearablesManager] localizedDescription: \(error.localizedDescription)")
 
         // Error code analysis based on MWDATCore SDK patterns:
-        // - rawValue 2 (configurationError): Often means Meta View not available/connected
+        // - rawValue 2 (configurationError): Often means glasses not available/connected
         // - Other codes may indicate actual plist/portal misconfiguration
 
         switch error.rawValue {
         case 2:
-            // configurationError (2) - Most commonly: glasses/Meta View not ready
+            // configurationError (2) - Most commonly: glasses not ready
             // This is a SOFT failure - the SDK config itself is likely correct
-            print("[WearablesManager] ⚠️ configurationError(2): Likely glasses/Meta View not ready")
-            print("[WearablesManager] 💡 Diagnosis: Meta View may not be installed, glasses may be asleep/unpaired")
+            print("[WearablesManager] ⚠️ configurationError(2): Likely glasses not ready")
+            print("[WearablesManager] 💡 Diagnosis: Glasses may be asleep/unpaired, or Meta AI app not installed")
 
             let reason = diagnoseNotReadyReason()
             connectionState = .notReady(reason)
@@ -191,23 +191,23 @@ final class WearablesManager: ObservableObject {
 
     /// Attempt to diagnose why glasses aren't ready
     private func diagnoseNotReadyReason() -> NotReadyReason {
-        // Check Meta View installation via URL schemes
-        var metaViewInstalled = false
+        // Check Meta AI app installation via URL schemes
+        var metaAIInstalled = false
 
-        for scheme in Self.metaViewSchemes {
+        for scheme in Self.metaAISchemes {
             if let url = URL(string: scheme), UIApplication.shared.canOpenURL(url) {
-                metaViewInstalled = true
+                metaAIInstalled = true
                 break
             }
         }
 
-        if !metaViewInstalled {
-            print("[WearablesManager] 🔍 Diagnosis: Meta View app appears not installed")
-            return .metaViewNotInstalled
+        if !metaAIInstalled {
+            print("[WearablesManager] 🔍 Diagnosis: Meta AI app appears not installed")
+            return .metaViewNotInstalled  // Reusing enum case, means "Meta AI not installed"
         }
 
-        // Meta View is installed but SDK still failed - likely glasses not connected/paired
-        print("[WearablesManager] 🔍 Diagnosis: Meta View installed, but glasses likely not connected/paired")
+        // Meta AI is installed but SDK still failed - likely glasses not connected/paired/awake
+        print("[WearablesManager] 🔍 Diagnosis: Meta AI installed, but glasses likely not connected/awake")
         return .glassesNotConnected
     }
 
@@ -426,7 +426,7 @@ final class WearablesManager: ObservableObject {
         }
     }
 
-    /// Retry SDK configuration (call after user connects glasses in Meta View)
+    /// Retry SDK configuration (call after user connects glasses in Meta AI app)
     func retryConfiguration() {
         print("[WearablesManager] 🔄 Retrying SDK configuration...")
         connectionState = .unavailable
@@ -434,19 +434,19 @@ final class WearablesManager: ObservableObject {
         configure()
     }
 
-    /// Open Meta View app if installed
-    func openMetaView() {
-        for scheme in Self.metaViewSchemes {
+    /// Open Meta AI app if installed
+    func openMetaAI() {
+        for scheme in Self.metaAISchemes {
             if let url = URL(string: scheme), UIApplication.shared.canOpenURL(url) {
-                print("[WearablesManager] 📱 Opening Meta View via \(scheme)")
+                print("[WearablesManager] 📱 Opening Meta AI via \(scheme)")
                 UIApplication.shared.open(url)
                 return
             }
         }
 
         // Fallback to App Store
-        print("[WearablesManager] 📱 Meta View not found, opening App Store")
-        if let appStoreURL = URL(string: "https://apps.apple.com/app/meta-view/id1659890060") {
+        print("[WearablesManager] 📱 Meta AI not found, opening App Store")
+        if let appStoreURL = URL(string: "https://apps.apple.com/app/meta-ai/id6468739428") {
             UIApplication.shared.open(appStoreURL)
         }
     }

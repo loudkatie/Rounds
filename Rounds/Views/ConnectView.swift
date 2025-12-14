@@ -199,11 +199,11 @@ struct ConnectView: View {
 
         case .notReady(let reason):
             VStack(spacing: 12) {
-                // Primary action: Open Meta View
+                // Primary action: Open Meta AI
                 Button {
-                    viewModel.wearablesManager.openMetaView()
+                    viewModel.wearablesManager.openMetaAI()
                 } label: {
-                    Label("Open Meta View", systemImage: "arrow.up.forward.app")
+                    Label("Open Meta AI", systemImage: "arrow.up.forward.app")
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(.orange)
@@ -224,7 +224,7 @@ struct ConnectView: View {
                 }
 
                 if reason == .metaViewNotInstalled {
-                    Text("Install Meta View from the App Store first")
+                    Text("Install Meta AI from the App Store first")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
