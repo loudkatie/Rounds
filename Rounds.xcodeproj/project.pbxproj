@@ -15,13 +15,18 @@
 		5E370129F148FBA3AC4F0BF6 /* TranscriptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5168F8C2DCDB2CD2ED17A736 /* TranscriptView.swift */; };
 		69A03B016FF869C4CC90A447 /* RoundsEpisode.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0FD0270602D1407AB230AE3 /* RoundsEpisode.swift */; };
 		78882DE3754C795C63674F68 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 19954A876539BD2B8B878A59 /* Assets.xcassets */; };
+		7FF479BA06EE34CECFE3DB53 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3C1324FBF33E2FA99D2D46 /* Colors.swift */; };
 		85998A3221AFFC0380367731 /* MWDATCamera in Frameworks */ = {isa = PBXBuildFile; productRef = 915A3C829B9327B9C12582E0 /* MWDATCamera */; };
 		95FA16A6A146191FA1E9EBCB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E70E29DB16097D12CEFCF6 /* ContentView.swift */; };
 		9B31EC270FDB58F3C1B54642 /* LlamaAgentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A13A965370EDB13CD2DADCF /* LlamaAgentService.swift */; };
 		9BB026F1AA241A915194FE47 /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36CCDF73721AA49A60ADD59 /* SummaryView.swift */; };
 		C974D6D04710797D0F069984 /* ConnectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4BF7B19B5AAD35AC592516 /* ConnectView.swift */; };
+		CE501079D2D61D1C4C52D378 /* OnboardingOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6393D425D54FE7041037E305 /* OnboardingOverlay.swift */; };
 		E7514092C3B15CDBC4F71254 /* WearablesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AB0F01F4A0FE797488F4128 /* WearablesManager.swift */; };
+		EF517A2A7DEE82DA91503E35 /* LandingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE6083E5AB193B043FB2E19 /* LandingView.swift */; };
 		F0E8F018418C96D6921BA79D /* AudioCaptureSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8762EA1B502FB5F43CB160C /* AudioCaptureSession.swift */; };
+		F3349619F86295E1D47A18EE /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6241002C45A88622015BE83 /* SplashView.swift */; };
+		FB18C2C56D2347218F226668 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7A17214D70FD58A0143B31 /* RootView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,12 +35,17 @@
 		1A13A965370EDB13CD2DADCF /* LlamaAgentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LlamaAgentService.swift; sourceTree = "<group>"; };
 		3CCD495C8E952C21B4A0C638 /* TranscriptViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptViewModel.swift; sourceTree = "<group>"; };
 		5168F8C2DCDB2CD2ED17A736 /* TranscriptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptView.swift; sourceTree = "<group>"; };
+		6393D425D54FE7041037E305 /* OnboardingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingOverlay.swift; sourceTree = "<group>"; };
 		84D5E2CBCF2022821DAF3EA6 /* RoundsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundsApp.swift; sourceTree = "<group>"; };
 		9AB0F01F4A0FE797488F4128 /* WearablesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WearablesManager.swift; sourceTree = "<group>"; };
+		AD3C1324FBF33E2FA99D2D46 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		B36CCDF73721AA49A60ADD59 /* SummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
 		CA4BF7B19B5AAD35AC592516 /* ConnectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectView.swift; sourceTree = "<group>"; };
 		CBADB6C24348E9029BB6D22C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		CFE6083E5AB193B043FB2E19 /* LandingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandingView.swift; sourceTree = "<group>"; };
 		D0FD0270602D1407AB230AE3 /* RoundsEpisode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundsEpisode.swift; sourceTree = "<group>"; };
+		D6241002C45A88622015BE83 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
+		DE7A17214D70FD58A0143B31 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		EF93D3FFD8451E4E2E0238A4 /* STTService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STTService.swift; sourceTree = "<group>"; };
 		F0E70E29DB16097D12CEFCF6 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		F8762EA1B502FB5F43CB160C /* AudioCaptureSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioCaptureSession.swift; sourceTree = "<group>"; };
@@ -59,6 +69,10 @@
 			isa = PBXGroup;
 			children = (
 				CA4BF7B19B5AAD35AC592516 /* ConnectView.swift */,
+				CFE6083E5AB193B043FB2E19 /* LandingView.swift */,
+				6393D425D54FE7041037E305 /* OnboardingOverlay.swift */,
+				DE7A17214D70FD58A0143B31 /* RootView.swift */,
+				D6241002C45A88622015BE83 /* SplashView.swift */,
 				B36CCDF73721AA49A60ADD59 /* SummaryView.swift */,
 				5168F8C2DCDB2CD2ED17A736 /* TranscriptView.swift */,
 			);
@@ -85,6 +99,7 @@
 			isa = PBXGroup;
 			children = (
 				19954A876539BD2B8B878A59 /* Assets.xcassets */,
+				AD3C1324FBF33E2FA99D2D46 /* Colors.swift */,
 				F0E70E29DB16097D12CEFCF6 /* ContentView.swift */,
 				CBADB6C24348E9029BB6D22C /* Info.plist */,
 				84D5E2CBCF2022821DAF3EA6 /* RoundsApp.swift */,
@@ -209,12 +224,17 @@
 			buildActionMask = 2147483647;
 			files = (
 				F0E8F018418C96D6921BA79D /* AudioCaptureSession.swift in Sources */,
+				7FF479BA06EE34CECFE3DB53 /* Colors.swift in Sources */,
 				C974D6D04710797D0F069984 /* ConnectView.swift in Sources */,
 				95FA16A6A146191FA1E9EBCB /* ContentView.swift in Sources */,
+				EF517A2A7DEE82DA91503E35 /* LandingView.swift in Sources */,
 				9B31EC270FDB58F3C1B54642 /* LlamaAgentService.swift in Sources */,
+				CE501079D2D61D1C4C52D378 /* OnboardingOverlay.swift in Sources */,
+				FB18C2C56D2347218F226668 /* RootView.swift in Sources */,
 				28BA9ED5E2CE8D90971787EB /* RoundsApp.swift in Sources */,
 				69A03B016FF869C4CC90A447 /* RoundsEpisode.swift in Sources */,
 				03AB9333F128F912DD49B090 /* STTService.swift in Sources */,
+				F3349619F86295E1D47A18EE /* SplashView.swift in Sources */,
 				9BB026F1AA241A915194FE47 /* SummaryView.swift in Sources */,
 				5E370129F148FBA3AC4F0BF6 /* TranscriptView.swift in Sources */,
 				0F5624642FC3DEBF636D4E05 /* TranscriptViewModel.swift in Sources */,

@@ -10,9 +10,9 @@ struct RoundsApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
                 .onOpenURL { url in
-                    // Handle OAuth callback from Meta app
+                    // Handle OAuth callback from Meta app (for glasses pairing)
                     Task { @MainActor in
                         await WearablesManager.shared.handleURL(url)
                     }

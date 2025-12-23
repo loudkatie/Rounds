@@ -197,25 +197,13 @@ struct ConnectView: View {
             }
             .padding(.horizontal)
 
-        case .notReady(let reason):
+        case .notReady:
             VStack(spacing: 12) {
-                // Primary action: Open Meta AI
-                Button {
-                    viewModel.wearablesManager.openMetaAI()
-                } label: {
-                    Label("Open Meta AI", systemImage: "arrow.up.forward.app")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(.orange)
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                }
-
-                // Secondary action: Retry after connecting
+                // Retry SDK configuration after user connects glasses in Meta AI app
                 Button {
                     viewModel.wearablesManager.retryConfiguration()
                 } label: {
-                    Label("Connect Glasses", systemImage: "antenna.radiowaves.left.and.right")
+                    Label("Retry Connection", systemImage: "arrow.clockwise")
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(.blue)
@@ -223,11 +211,10 @@ struct ConnectView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
 
-                if reason == .metaViewNotInstalled {
-                    Text("Install Meta AI from the App Store first")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+                Text("Ensure glasses are paired in the Meta AI app, then retry.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
             }
             .padding(.horizontal)
 
