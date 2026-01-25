@@ -8,17 +8,17 @@ struct SummaryView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 24) {
-                    if viewModel.isGeneratingSummary {
+                    if viewModel.isAnalyzing {
                         loadingView
-                    } else if let summary = viewModel.summary {
-                        summaryContent(summary)
+                    } else if let analysis = viewModel.analysis {
+                        summaryContent(analysis)
                     } else if let error = viewModel.errorMessage {
                         errorView(error)
                     }
 
                     // Transcript Section
-                    if let episode = viewModel.currentEpisode, !episode.fullTranscriptText.isEmpty {
-                        transcriptSection(episode)
+                    if !viewModel.liveTranscript.isEmpty {
+                        transcriptSection(viewModel.liveTranscript)
                     }
                 }
                 .padding()
@@ -33,11 +33,11 @@ struct SummaryView: View {
                 }
 
                 ToolbarItem(placement: .topBarLeading) {
-                    if let episode = viewModel.currentEpisode {
+                    if let session = viewModel.currentSession {
                         ShareLink(
-                            item: episode.fullTranscriptText,
+                            item: session.shareableText,
                             subject: Text("Rounds Session"),
-                            message: Text("Session transcript from \(episode.startTime.formatted())")
+                            message: Text("Session from \(session.formattedDate)")
                         ) {
                             Image(systemName: "square.and.arrow.up")
                         }
@@ -76,16 +76,22 @@ struct SummaryView: View {
     }
 
     @ViewBuilder
-    private func summaryContent(_ summary: EpisodeSummary) -> some View {
+    private func summaryContent(_ analysis: RoundsAnalysis) -> some View {
         // Session Info
-        if let episode = viewModel.currentEpisode {
-            sessionInfoCard(episode)
+        if let session = viewModel.currentSession {
+            sessionInfoCard(session)
+        }
+
+        // Explanation
+        sectionCard(title: "What This Means", icon: "doc.text.fill") {
+            Text(analysis.explanation)
+                .font(.body)
         }
 
         // Key Points
         sectionCard(title: "Key Points", icon: "lightbulb.fill") {
             VStack(alignment: .leading, spacing: 8) {
-                ForEach(summary.keyPoints, id: \.self) { point in
+                ForEach(analysis.summaryPoints, id: \.self) { point in
                     HStack(alignment: .top, spacing: 8) {
                         Image(systemName: "circle.fill")
                             .font(.system(size: 6))
@@ -97,60 +103,17 @@ struct SummaryView: View {
             }
         }
 
-        // Action Items
-        if !summary.actionItems.isEmpty {
-            sectionCard(title: "Action Items", icon: "checkmark.circle.fill") {
-                VStack(spacing: 12) {
-                    ForEach(summary.actionItems) { item in
-                        actionItemRow(item)
-                    }
-                }
-            }
-        }
-
-        // Sentiment & Tags
-        HStack(spacing: 12) {
-            // Sentiment
-            VStack(alignment: .leading, spacing: 4) {
-                Label("Sentiment", systemImage: "face.smiling")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(summary.sentiment)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-            }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(.systemGray6))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-
-            // Participants
-            VStack(alignment: .leading, spacing: 4) {
-                Label("Participants", systemImage: "person.2.fill")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text("\(summary.participants.count)")
-                    .font(.title2)
-                    .fontWeight(.bold)
-            }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(.systemGray6))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-        }
-
-        // Tags
-        if !summary.topicsTags.isEmpty {
-            sectionCard(title: "Topics", icon: "tag.fill") {
-                FlowLayout(spacing: 8) {
-                    ForEach(summary.topicsTags, id: \.self) { tag in
-                        Text(tag)
-                            .font(.caption)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(.blue.opacity(0.1))
-                            .foregroundStyle(.blue)
-                            .clipShape(Capsule())
+        // Questions
+        if !analysis.followUpQuestions.isEmpty {
+            sectionCard(title: "Questions to Ask", icon: "questionmark.circle.fill") {
+                VStack(alignment: .leading, spacing: 8) {
+                    ForEach(Array(analysis.followUpQuestions.enumerated()), id: \.offset) { index, question in
+                        HStack(alignment: .top, spacing: 8) {
+                            Text("\(index + 1).")
+                                .fontWeight(.medium)
+                                .foregroundStyle(.blue)
+                            Text(question)
+                        }
                     }
                 }
             }
@@ -158,13 +121,13 @@ struct SummaryView: View {
     }
 
     @ViewBuilder
-    private func sessionInfoCard(_ episode: RoundsEpisode) -> some View {
+    private func sessionInfoCard(_ session: RecordingSession) -> some View {
         HStack(spacing: 16) {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Duration")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Text(viewModel.formattedDuration)
+                Text(session.formattedDuration)
                     .font(.title3)
                     .fontWeight(.semibold)
                     .monospacedDigit()
@@ -173,11 +136,11 @@ struct SummaryView: View {
             Divider()
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Started")
+                Text("Date")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Text(episode.startTime.formatted(date: .omitted, time: .shortened))
-                    .font(.title3)
+                Text(session.formattedDate)
+                    .font(.subheadline)
                     .fontWeight(.semibold)
             }
 
@@ -187,7 +150,7 @@ struct SummaryView: View {
                 Text("Words")
                     .font(.caption)
                     .foregroundStyle(.secondary)
-                Text("\(episode.fullTranscriptText.split(separator: " ").count)")
+                Text("\(session.transcript.split(separator: " ").count)")
                     .font(.title3)
                     .fontWeight(.semibold)
             }
@@ -217,38 +180,12 @@ struct SummaryView: View {
     }
 
     @ViewBuilder
-    private func actionItemRow(_ item: ActionItem) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "square")
-                .foregroundStyle(.secondary)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(item.description)
-                    .font(.subheadline)
-
-                HStack(spacing: 12) {
-                    if let assignee = item.assignee {
-                        Label(assignee, systemImage: "person.fill")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                    if let due = item.dueDate {
-                        Label(due, systemImage: "calendar")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private func transcriptSection(_ episode: RoundsEpisode) -> some View {
+    private func transcriptSection(_ transcript: String) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Label("Full Transcript", systemImage: "doc.text.fill")
                 .font(.headline)
 
-            Text(episode.fullTranscriptText)
+            Text(transcript)
                 .font(.body)
                 .foregroundStyle(.secondary)
                 .textSelection(.enabled)

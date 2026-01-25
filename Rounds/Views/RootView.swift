@@ -2,75 +2,94 @@
 //  RootView.swift
 //  Rounds
 //
-//  Navigation controller. Calm transitions.
+//  Navigation controller. Clean, simple state management.
+//  
+//  States:
+//  1. Splash (2 seconds)
+//  2. Onboarding (if no profile exists)
+//  3. Main app (recording interface)
 //
 
 import SwiftUI
 
 struct RootView: View {
-
+    
+    // MARK: - State
+    
+    @ObservedObject private var profileStore = ProfileStore.shared
+    @StateObject private var viewModel = TranscriptViewModel()
+    
     @State private var showSplash = true
-    @State private var showOnboarding = false
-    @State private var onboardingStep = 1
-    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
-
-    // DEBUG: Set to true to always show onboarding (for testing)
-    private let forceShowOnboarding = true
-
+    
+    // DEBUG: Set to true to force onboarding even if profile exists
+    private let forceShowOnboarding = false
+    
+    // MARK: - Computed
+    
+    private var shouldShowOnboarding: Bool {
+        forceShowOnboarding || !profileStore.hasCompletedOnboarding
+    }
+    
+    // MARK: - Body
+    
     var body: some View {
         ZStack {
-            // Base layer: Landing (always rendered for smooth transitions)
-            LandingView(onRecordTapped: {
-                // Record action - to be wired later
-            })
-
-            // Splash overlay
+            // Base layer: Main app (always rendered for smooth transitions)
+            if profileStore.hasCompletedOnboarding && !forceShowOnboarding {
+                LandingView(viewModel: viewModel)
+                    .transition(.opacity)
+            }
+            
+            // Onboarding (shown if no profile)
+            if !showSplash && shouldShowOnboarding {
+                OnboardingFlow(profileStore: profileStore) {
+                    // Onboarding complete — profile now exists
+                    // View will automatically update due to @Published
+                }
+                .transition(.opacity.combined(with: .move(edge: .trailing)))
+                .zIndex(1)
+            }
+            
+            // Splash overlay (always on top initially)
             if showSplash {
                 SplashView()
                     .transition(.opacity)
-                    .zIndex(1)
-            }
-
-            // Onboarding overlay
-            if showOnboarding {
-                OnboardingOverlay(step: $onboardingStep) {
-                    withAnimation(.easeOut(duration: 0.3)) {
-                        showOnboarding = false
-                        hasSeenOnboarding = true
-                    }
-                }
-                .transition(.opacity.combined(with: .scale(scale: 0.96)))
-                .zIndex(2)
+                    .zIndex(2)
             }
         }
         .animation(.easeInOut(duration: 0.5), value: showSplash)
-        .animation(.easeInOut(duration: 0.3), value: showOnboarding)
+        .animation(.easeInOut(duration: 0.4), value: profileStore.hasCompletedOnboarding)
         .onAppear {
-            triggerSplashToLanding()
+            startSplashTimer()
         }
     }
-
-    private func triggerSplashToLanding() {
-        // Splash duration: 2 seconds
+    
+    // MARK: - Splash Timer
+    
+    private func startSplashTimer() {
+        // Show splash for 2 seconds, then fade out
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            withAnimation {
+            withAnimation(.easeOut(duration: 0.5)) {
                 showSplash = false
-            }
-
-            // Show onboarding after splash fades
-            let shouldShowOnboarding = forceShowOnboarding || !hasSeenOnboarding
-
-            if shouldShowOnboarding {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    withAnimation {
-                        showOnboarding = true
-                    }
-                }
             }
         }
     }
 }
 
-#Preview {
-    RootView()
+// MARK: - Preview
+
+#Preview("New User") {
+    // Reset profile for preview
+    let _ = ProfileStore.shared.resetProfile()
+    return RootView()
+}
+
+#Preview("Returning User") {
+    // Create a test profile
+    let _ = ProfileStore.shared.createProfile(
+        caregiverName: "Katie",
+        patientName: "Don",
+        patientSituation: "Stage 4 lymphoma"
+    )
+    return RootView()
 }

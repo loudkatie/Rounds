@@ -1,154 +1,262 @@
+//
+//  TranscriptViewModel.swift
+//  Rounds AI
+//
+//  Core ViewModel - Uses NATIVE Apple Speech Recognition + OpenAI for analysis
+//  NO ElevenLabs - pure iOS stack (except ChatGPT API)
+//
+
 import Foundation
 import Combine
+import AVFoundation
 import Speech
 
 @MainActor
 final class TranscriptViewModel: ObservableObject {
     // MARK: - Published State
-
-    @Published private(set) var currentEpisode: RoundsEpisode?
+    
     @Published private(set) var liveTranscript: String = ""
     @Published private(set) var isSessionActive = false
-    @Published private(set) var isGeneratingSummary = false
-    @Published private(set) var summary: EpisodeSummary?
     @Published private(set) var errorMessage: String?
-
-    // MARK: - Dependencies
-
-    var wearablesManager: WearablesManager
-    let audioCapture: AudioCaptureSession
-    let sttService: STTService
-    private let llamaService = LlamaAgentService.shared
-
-    private var lastCommittedText: String = ""
-
+    @Published private(set) var elapsedSeconds: Int = 0
+    
+    // Analysis state
+    @Published private(set) var isAnalyzing = false
+    @Published private(set) var analysis: RoundsAnalysis?
+    @Published private(set) var hasTranscriptToAnalyze = false
+    
+    // Session & Conversation
+    @Published private(set) var currentSession: RecordingSession?
+    @Published private(set) var conversationHistory: [ConversationMessage] = []
+    
+    // MARK: - Dependencies (Native Apple)
+    
+    private let sttService = STTService()
+    private let openAIService = OpenAIService.shared
+    private let sessionStore = SessionStore.shared
+    
+    private var durationTimer: Timer?
+    
     // MARK: - Initialization
-
+    
     init() {
-        self.wearablesManager = WearablesManager.shared
-        self.audioCapture = AudioCaptureSession()
-        self.sttService = STTService()
-
         setupBindings()
     }
-
+    
     private func setupBindings() {
+        // Bind to native Apple STT transcript updates
         sttService.onTranscriptUpdate = { [weak self] text in
             Task { @MainActor in
                 self?.liveTranscript = text
             }
         }
-
-        wearablesManager.onConnectionReady = { [weak self] in
-            Task { @MainActor in
-                print("[TranscriptViewModel] Glasses connection ready")
-            }
-        }
     }
-
+    
     // MARK: - Session Control
-
+    
     func startSession() async {
         guard !isSessionActive else { return }
-
+        
         // Request speech recognition permission
         let authorized = await sttService.requestAuthorization()
         guard authorized else {
-            errorMessage = "Speech recognition permission denied"
+            errorMessage = "Speech recognition permission denied. Please enable in Settings."
             return
         }
-
-        // Create new episode
-        currentEpisode = RoundsEpisode()
+        
+        // Reset state
         liveTranscript = ""
-        lastCommittedText = ""
-        summary = nil
+        analysis = nil
+        conversationHistory = []
+        currentSession = nil
         errorMessage = nil
-
-        // Start STT
-        _ = sttService.startTranscription()
-
-        // Start audio capture from iPhone mic
-        audioCapture.startCapture()
-
+        elapsedSeconds = 0
+        
+        // Start native Apple STT
+        let started = sttService.startTranscription()
+        guard started else {
+            errorMessage = "Failed to start transcription. Please try again."
+            return
+        }
+        
         isSessionActive = true
+        startDurationTimer()
+        print("[TranscriptViewModel] Session started with Apple Speech Recognition")
     }
-
+    
     func endSession() async {
         guard isSessionActive else { return }
-
-        // Stop capture and transcription
-        audioCapture.stopCapture()
+        
+        stopDurationTimer()
         sttService.stopTranscription()
-
-        // Commit final transcript
-        if !liveTranscript.isEmpty {
-            commitTranscriptEntry(text: liveTranscript)
-        }
-
-        // Finalize episode
-        currentEpisode?.endTime = Date()
-
+        
+        let transcript = liveTranscript
+        
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("FINAL TRANSCRIPT: \(transcript)")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        
         isSessionActive = false
-
-        // Generate summary
-        await generateSummary()
+        hasTranscriptToAnalyze = !transcript.isEmpty
+        
+        if transcript.isEmpty {
+            errorMessage = "No speech detected. Try speaking closer to the microphone."
+        } else {
+            currentSession = RecordingSession(
+                transcript: transcript,
+                durationSeconds: elapsedSeconds
+            )
+        }
+        
+        print("[TranscriptViewModel] Session ended - transcript ready for analysis")
     }
-
+    
     func cancelSession() {
-        audioCapture.stopCapture()
-        sttService.stopTranscription()
-        currentEpisode = nil
+        stopDurationTimer()
+        sttService.cancelTranscription()
         liveTranscript = ""
         isSessionActive = false
+        elapsedSeconds = 0
+        analysis = nil
+        hasTranscriptToAnalyze = false
+        currentSession = nil
+        conversationHistory = []
     }
-
-    // MARK: - Transcript Management
-
-    private func commitTranscriptEntry(text: String) {
-        guard !text.isEmpty, text != lastCommittedText else { return }
-
-        let entry = TranscriptEntry(text: text)
-        currentEpisode?.transcript.append(entry)
-        lastCommittedText = text
+    
+    func discardRecording() {
+        liveTranscript = ""
+        analysis = nil
+        hasTranscriptToAnalyze = false
+        currentSession = nil
+        conversationHistory = []
+        errorMessage = nil
+        elapsedSeconds = 0
     }
-
-    // MARK: - Summary Generation
-
-    private func generateSummary() async {
-        guard let episode = currentEpisode else { return }
-
-        let transcriptText = episode.fullTranscriptText
-        guard !transcriptText.isEmpty else {
-            errorMessage = "No transcript to summarize"
+    
+    func startNewRecording() {
+        discardRecording()
+    }
+    
+    // MARK: - Timer
+    
+    private func startDurationTimer() {
+        durationTimer?.invalidate()
+        durationTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            Task { @MainActor in
+                self?.elapsedSeconds += 1
+            }
+        }
+    }
+    
+    private func stopDurationTimer() {
+        durationTimer?.invalidate()
+        durationTimer = nil
+    }
+    
+    // MARK: - OpenAI Analysis
+    
+    func analyzeWithRoundsAI() async {
+        guard !liveTranscript.isEmpty else {
+            errorMessage = "No transcript to analyze"
             return
         }
-
-        isGeneratingSummary = true
-
+        
+        guard !isAnalyzing else { return }
+        
+        isAnalyzing = true
+        errorMessage = nil
+        
         do {
-            let generatedSummary = try await llamaService.generateSummary(from: transcriptText)
-            self.summary = generatedSummary
-            self.currentEpisode?.summary = generatedSummary
+            let result = try await openAIService.analyzeTranscript(liveTranscript)
+            analysis = result
+            hasTranscriptToAnalyze = false
+            
+            // Update session with analysis
+            currentSession?.aiExplanation = result.explanation
+            currentSession?.keyPoints = result.summaryPoints
+            currentSession?.followUpQuestions = result.followUpQuestions
+            
+            if let session = currentSession {
+                sessionStore.saveSession(session)
+            }
+            
+            print("[TranscriptViewModel] Analysis complete")
         } catch {
-            errorMessage = "Failed to generate summary: \(error.localizedDescription)"
+            errorMessage = error.localizedDescription
+            print("[TranscriptViewModel] Analysis failed: \(error)")
         }
-
-        isGeneratingSummary = false
+        
+        isAnalyzing = false
     }
-
+    
+    // MARK: - Follow-up Conversation
+    
+    func askFollowUp(_ question: String) async {
+        guard !question.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        guard !isAnalyzing else { return }
+        guard let explanation = analysis?.explanation else {
+            errorMessage = "Please analyze the transcript first"
+            return
+        }
+        
+        isAnalyzing = true
+        errorMessage = nil
+        
+        let userMessage = ConversationMessage(isUser: true, content: question)
+        conversationHistory.append(userMessage)
+        
+        do {
+            let response = try await openAIService.askFollowUp(
+                question: question,
+                transcript: liveTranscript,
+                previousExplanation: explanation,
+                conversationHistory: conversationHistory
+            )
+            
+            let aiMessage = ConversationMessage(isUser: false, content: response)
+            conversationHistory.append(aiMessage)
+            
+            currentSession?.conversationHistory = conversationHistory
+            if let session = currentSession {
+                sessionStore.saveSession(session)
+            }
+        } catch {
+            conversationHistory.removeLast()
+            errorMessage = error.localizedDescription
+        }
+        
+        isAnalyzing = false
+    }
+    
+    // MARK: - Load Previous Session
+    
+    func loadSession(_ session: RecordingSession) {
+        liveTranscript = session.transcript
+        elapsedSeconds = session.durationSeconds
+        currentSession = session
+        conversationHistory = session.conversationHistory
+        
+        if let explanation = session.aiExplanation {
+            analysis = RoundsAnalysis(
+                explanation: explanation,
+                summaryPoints: session.keyPoints,
+                followUpQuestions: session.followUpQuestions
+            )
+            hasTranscriptToAnalyze = false
+        } else {
+            analysis = nil
+            hasTranscriptToAnalyze = true
+        }
+        
+        errorMessage = nil
+        isSessionActive = false
+    }
+    
     // MARK: - Computed Properties
-
-    var sessionDuration: TimeInterval {
-        guard let episode = currentEpisode else { return 0 }
-        let endTime = episode.endTime ?? Date()
-        return endTime.timeIntervalSince(episode.startTime)
-    }
-
+    
     var formattedDuration: String {
-        let duration = sessionDuration
-        let minutes = Int(duration) / 60
-        let seconds = Int(duration) % 60
+        let minutes = elapsedSeconds / 60
+        let seconds = elapsedSeconds % 60
         return String(format: "%02d:%02d", minutes, seconds)
     }
 }

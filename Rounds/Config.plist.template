@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Config.plist.template
+
+  Copy this file to Config.plist and add your API keys.
+  Config.plist is gitignored to protect your secrets.
+
+  To get an OpenAI API key:
+  1. Go to https://platform.openai.com/api-keys
+  2. Create a new secret key
+  3. Copy the key into OPENAI_API_KEY below
+-->
+<plist version="1.0">
+<dict>
+	<key>OPENAI_API_KEY</key>
+	<string>sk-your-api-key-here</string>
+</dict>
+</plist>

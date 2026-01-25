@@ -15,10 +15,11 @@ enum RoundsColor {
     /// Very light pastel blue - cards, soft backgrounds
     static let blueLight = Color(red: 234/255, green: 244/255, blue: 255/255)
 
-    /// Calm medical blue - record button, primary CTAs
-    static let bluePrimary = Color(red: 30/255, green: 136/255, blue: 229/255)
+    /// Friendly bright blue - record button, primary CTAs, splash
+    /// Based on Katie's reference design
+    static let bluePrimary = Color(red: 66/255, green: 133/255, blue: 244/255)
 
-    /// Deep navy - headers, emphasis, gradient end
+    /// Deep navy - headers, emphasis
     static let blueDeep = Color(red: 21/255, green: 71/255, blue: 137/255)
 
     /// Midnight - darkest accent

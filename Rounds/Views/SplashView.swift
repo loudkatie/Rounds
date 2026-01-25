@@ -2,35 +2,44 @@
 //  SplashView.swift
 //  Rounds
 //
-//  A moment of calm. Not a loading screen.
+//  Solid blue background, white logo. Clean and calm.
+//  Based on Katie's reference design.
 //
 
 import SwiftUI
 
 struct SplashView: View {
-
+    // The friendly blue from Katie's reference design
+    private let splashBlue = Color(red: 32/255, green: 150/255, blue: 243/255)
+    
     var body: some View {
         ZStack {
-            RoundsColor.splashGradient
+            // Solid blue background
+            splashBlue
                 .ignoresSafeArea()
 
-            VStack(spacing: 24) {
-                // Large outlined heart - bigger, more presence
-                Image(systemName: "heart")
-                    .font(.system(size: 80, weight: .light))
-                    .foregroundColor(.white)
+            VStack(spacing: 16) {
+                // Heart in white circle (like reference)
+                ZStack {
+                    Circle()
+                        .fill(.white)
+                        .frame(width: 100, height: 100)
+                    
+                    Image(systemName: "heart.fill")
+                        .font(.system(size: 44, weight: .regular))
+                        .foregroundColor(splashBlue)
+                }
 
-                // App name - large and confident
+                // Wordmark
                 Text("Rounds")
-                    .font(.system(size: 48, weight: .semibold, design: .default))
+                    .font(.system(size: 44, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
-                    .tracking(1)
 
-                // Tagline - softer, supportive
-                Text("I'm here when you're ready.")
-                    .font(.body)
-                    .foregroundColor(.white.opacity(0.85))
-                    .padding(.top, 8)
+                // Tagline - AI focused
+                Text("Your AI medical assistant")
+                    .font(.system(size: 17, weight: .medium))
+                    .foregroundColor(.white.opacity(0.9))
+                    .padding(.top, 4)
             }
         }
     }

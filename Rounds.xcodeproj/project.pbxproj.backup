@@ -8,9 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		00CAA0D3098F1307B5171BC1 /* MWDATMockDevice in Frameworks */ = {isa = PBXBuildFile; productRef = 67800147391143BE11021C09 /* MWDATMockDevice */; };
-		OPENAI_BUILD_001122334455 /* OpenAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = OPENAI001122334455667788 /* OpenAIService.swift */; };
-		PROFILE_BUILD_01122334455 /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = PROFILE01122334455667788 /* ProfileStore.swift */; };
-		SESSION_BUILD_01122334455 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = SESSION01122334455667788 /* SessionStore.swift */; };
 		03AB9333F128F912DD49B090 /* STTService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF93D3FFD8451E4E2E0238A4 /* STTService.swift */; };
 		0F5624642FC3DEBF636D4E05 /* TranscriptViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCD495C8E952C21B4A0C638 /* TranscriptViewModel.swift */; };
 		28BA9ED5E2CE8D90971787EB /* RoundsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D5E2CBCF2022821DAF3EA6 /* RoundsApp.swift */; };
@@ -59,9 +56,6 @@
 		E2BD55E52F258192005CC801 /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
 		E2BD55ED2F2581C2005CC801 /* PreviousRoundsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviousRoundsView.swift; sourceTree = "<group>"; };
 		E2BD55F82F2582D5005CC801 /* AIMemoryContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIMemoryContext.swift; sourceTree = "<group>"; };
-		OPENAI001122334455667788 /* OpenAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIService.swift; sourceTree = "<group>"; };
-		PROFILE01122334455667788 /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStore.swift; sourceTree = "<group>"; };
-		SESSION01122334455667788 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		EF93D3FFD8451E4E2E0238A4 /* STTService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STTService.swift; sourceTree = "<group>"; };
 		F0E70E29DB16097D12CEFCF6 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		F8762EA1B502FB5F43CB160C /* AudioCaptureSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioCaptureSession.swift; sourceTree = "<group>"; };
@@ -167,9 +161,6 @@
 			isa = PBXGroup;
 			children = (
 				1A13A965370EDB13CD2DADCF /* LlamaAgentService.swift */,
-				SESSION01122334455667788 /* SessionStore.swift */,
-				PROFILE01122334455667788 /* ProfileStore.swift */,
-				OPENAI001122334455667788 /* OpenAIService.swift */,
 				EF93D3FFD8451E4E2E0238A4 /* STTService.swift */,
 			);
 			path = Services;
@@ -270,9 +261,6 @@
 				E2BD55E92F258192005CC801 /* RecordingSession.swift in Sources */,
 				E2BD55EA2F258192005CC801 /* RoundsEpisode.swift in Sources */,
 				03AB9333F128F912DD49B090 /* STTService.swift in Sources */,
-				SESSION_BUILD_01122334455 /* SessionStore.swift in Sources */,
-				PROFILE_BUILD_01122334455 /* ProfileStore.swift in Sources */,
-				OPENAI_BUILD_001122334455 /* OpenAIService.swift in Sources */,
 				F3349619F86295E1D47A18EE /* SplashView.swift in Sources */,
 				9BB026F1AA241A915194FE47 /* SummaryView.swift in Sources */,
 				5E370129F148FBA3AC4F0BF6 /* TranscriptView.swift in Sources */,

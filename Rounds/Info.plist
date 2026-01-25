@@ -44,6 +44,10 @@
 		<key>MetaAppID</key>
 		<string>25432101813066488</string>
 	</dict>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Rounds needs microphone access to record and transcribe medical conversations in real time.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Rounds uses speech recognition to transcribe your conversations live, helping you capture important medical information.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-peripheral</string>

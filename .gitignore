@@ -49,6 +49,7 @@ fastlane/test_output
 !Release.xcconfig.template
 Secrets/
 *.plist.secret
+Rounds/Config.plist
 
 # IDE
 .idea/
