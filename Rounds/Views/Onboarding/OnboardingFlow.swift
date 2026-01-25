@@ -1,6 +1,6 @@
 //
 //  OnboardingFlow.swift
-//  Rounds
+//  Rounds AI
 //
 //  5-step onboarding that establishes the relationship and gets permissions.
 //
@@ -31,11 +31,14 @@ struct OnboardingFlow: View {
     
     private let relationshipOptions = ["Parent", "Spouse", "Child", "Sibling", "Friend", "Other"]
     
+    // Brand color
+    private let brandBlue = Color(red: 0/255, green: 172/255, blue: 238/255)
+    
     var body: some View {
         VStack(spacing: 0) {
             // Header (except welcome screen)
             if currentStep > 0 {
-                OnboardingHeader()
+                OnboardingHeader(brandBlue: brandBlue)
                     .padding(.top, 60)
             }
             
@@ -45,26 +48,29 @@ struct OnboardingFlow: View {
             Group {
                 switch currentStep {
                 case 0:
-                    WelcomeStep()
+                    WelcomeStep(brandBlue: brandBlue)
                 case 1:
-                    NameStep(name: $caregiverName, isFocused: $isInputFocused)
+                    NameStep(name: $caregiverName, isFocused: $isInputFocused, brandBlue: brandBlue)
                 case 2:
                     PatientStep(
                         patientName: $patientName,
                         relationship: $relationship,
                         relationshipOptions: relationshipOptions,
-                        isFocused: $isInputFocused
+                        isFocused: $isInputFocused,
+                        brandBlue: brandBlue
                     )
                 case 3:
                     SituationStep(
                         patientName: patientName,
                         situation: $patientSituation,
-                        isFocused: $isInputFocused
+                        isFocused: $isInputFocused,
+                        brandBlue: brandBlue
                     )
                 case 4:
                     PermissionsStep(
                         permissionGranted: $micPermissionGranted,
-                        onRequestPermission: requestMicPermission
+                        onRequestPermission: requestMicPermission,
+                        brandBlue: brandBlue
                     )
                 default:
                     EmptyView()
@@ -77,7 +83,7 @@ struct OnboardingFlow: View {
             // Progress + Button
             VStack(spacing: 24) {
                 // Progress bar
-                ProgressIndicator(current: currentStep, total: totalSteps)
+                ProgressIndicator(current: currentStep, total: totalSteps, brandBlue: brandBlue)
                 
                 // Next/Get Started button
                 Button(action: handleNext) {
@@ -87,7 +93,7 @@ struct OnboardingFlow: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 18)
-                        .background(canProceed ? RoundsColor.bluePrimary : RoundsColor.bluePrimary.opacity(0.4))
+                        .background(canProceed ? brandBlue : brandBlue.opacity(0.4))
                         .cornerRadius(16)
                 }
                 .disabled(!canProceed)
@@ -117,7 +123,7 @@ struct OnboardingFlow: View {
         case 1: return !caregiverName.trimmingCharacters(in: .whitespaces).isEmpty
         case 2: return !patientName.trimmingCharacters(in: .whitespaces).isEmpty && !relationship.isEmpty
         case 3: return !patientSituation.trimmingCharacters(in: .whitespaces).isEmpty
-        case 4: return true // Can always proceed, but button text changes
+        case 4: return true
         default: return false
         }
     }
@@ -140,7 +146,6 @@ struct OnboardingFlow: View {
             currentStep += 1
         }
         
-        // Re-focus input after transition
         if currentStep >= 1 && currentStep <= 3 {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
                 isInputFocused = true
@@ -176,24 +181,19 @@ struct OnboardingFlow: View {
 // MARK: - Header
 
 private struct OnboardingHeader: View {
+    let brandBlue: Color
+    
     var body: some View {
-        VStack(spacing: 8) {
-            // Heart + cross icon
-            ZStack {
-                Image(systemName: "heart.fill")
-                    .font(.system(size: 32, weight: .regular))
-                    .foregroundColor(RoundsColor.bluePrimary)
-                
-                Image(systemName: "plus")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(.white)
-                    .offset(x: 0, y: -1)
-            }
+        VStack(spacing: 6) {
+            // Heart icon
+            Image(systemName: "heart.fill")
+                .font(.system(size: 28, weight: .regular))
+                .foregroundColor(brandBlue)
             
             // Wordmark
             Text("Rounds AI")
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundColor(RoundsColor.textPrimary)
+                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .foregroundColor(.black)
         }
     }
 }
@@ -203,23 +203,24 @@ private struct OnboardingHeader: View {
 private struct ProgressIndicator: View {
     let current: Int
     let total: Int
+    let brandBlue: Color
     
     var body: some View {
         VStack(spacing: 8) {
             // Dots
-            HStack(spacing: 8) {
+            HStack(spacing: 10) {
                 ForEach(0..<total, id: \.self) { index in
                     Circle()
-                        .fill(index <= current ? RoundsColor.bluePrimary : RoundsColor.blueLight)
-                        .frame(width: index == current ? 12 : 8, height: index == current ? 12 : 8)
+                        .fill(index <= current ? brandBlue : brandBlue.opacity(0.3))
+                        .frame(width: index == current ? 14 : 10, height: index == current ? 14 : 10)
                         .animation(.easeInOut(duration: 0.2), value: current)
                 }
             }
             
             // Text
             Text("\(current + 1) of \(total)")
-                .font(.caption)
-                .foregroundColor(RoundsColor.textSecondary)
+                .font(.subheadline)
+                .foregroundColor(.gray)
         }
     }
 }
@@ -227,35 +228,36 @@ private struct ProgressIndicator: View {
 // MARK: - Step 1: Welcome
 
 private struct WelcomeStep: View {
+    let brandBlue: Color
+    
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 28) {
             // Large icon
             ZStack {
-                Image(systemName: "heart.fill")
-                    .font(.system(size: 72, weight: .regular))
-                    .foregroundColor(RoundsColor.bluePrimary)
+                Circle()
+                    .fill(brandBlue.opacity(0.1))
+                    .frame(width: 120, height: 120)
                 
-                Image(systemName: "plus")
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.white)
-                    .offset(x: 0, y: -2)
+                Image(systemName: "heart.fill")
+                    .font(.system(size: 56, weight: .regular))
+                    .foregroundColor(brandBlue)
             }
             
             VStack(spacing: 16) {
                 Text("Hi. I'm Rounds AI.")
                     .font(.title)
                     .fontWeight(.bold)
-                    .foregroundColor(RoundsColor.textPrimary)
+                    .foregroundColor(.black)
                 
                 Text("I'm your AI assistant here to help you talk to doctors and medical teams.")
                     .font(.body)
-                    .foregroundColor(RoundsColor.textSecondary)
+                    .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
                 
                 Text("I'll listen during appointments, translate the medical speak, and help you remember what matters.")
                     .font(.body)
-                    .foregroundColor(RoundsColor.textSecondary)
+                    .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
                     .padding(.top, 8)
@@ -269,24 +271,25 @@ private struct WelcomeStep: View {
 private struct NameStep: View {
     @Binding var name: String
     var isFocused: FocusState<Bool>.Binding
+    let brandBlue: Color
     
     var body: some View {
-        VStack(spacing: 32) {
-            VStack(spacing: 12) {
+        VStack(spacing: 24) {
+            VStack(spacing: 8) {
                 Text("What's your first name?")
                     .font(.title2)
                     .fontWeight(.semibold)
-                    .foregroundColor(RoundsColor.textPrimary)
+                    .foregroundColor(.black)
                 
                 Text("I'll use this to personalize your experience.")
                     .font(.subheadline)
-                    .foregroundColor(RoundsColor.textSecondary)
+                    .foregroundColor(.gray)
             }
             
             TextField("Your first name", text: $name)
                 .font(.title3)
                 .padding(16)
-                .background(RoundsColor.blueLight)
+                .background(brandBlue.opacity(0.08))
                 .cornerRadius(12)
                 .focused(isFocused)
                 .textInputAutocapitalization(.words)
@@ -303,28 +306,27 @@ private struct PatientStep: View {
     @Binding var relationship: String
     let relationshipOptions: [String]
     var isFocused: FocusState<Bool>.Binding
+    let brandBlue: Color
     
     var body: some View {
-        VStack(spacing: 32) {
-            VStack(spacing: 12) {
-                Text("Who are you caring for?")
-                    .font(.title2)
-                    .fontWeight(.semibold)
-                    .foregroundColor(RoundsColor.textPrimary)
-            }
+        VStack(spacing: 24) {
+            Text("Who are you caring for?")
+                .font(.title2)
+                .fontWeight(.semibold)
+                .foregroundColor(.black)
             
             VStack(spacing: 20) {
                 // Patient name
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text("Their first name")
                         .font(.subheadline)
                         .fontWeight(.medium)
-                        .foregroundColor(RoundsColor.textSecondary)
+                        .foregroundColor(.gray)
                     
                     TextField("First name", text: $patientName)
                         .font(.title3)
                         .padding(16)
-                        .background(RoundsColor.blueLight)
+                        .background(brandBlue.opacity(0.08))
                         .cornerRadius(12)
                         .focused(isFocused)
                         .textInputAutocapitalization(.words)
@@ -332,13 +334,12 @@ private struct PatientStep: View {
                 }
                 
                 // Relationship picker
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text("\(patientName.isEmpty ? "They are" : patientName + " is") my...")
                         .font(.subheadline)
                         .fontWeight(.medium)
-                        .foregroundColor(RoundsColor.textSecondary)
+                        .foregroundColor(.gray)
                     
-                    // Pill buttons for relationship
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 90))], spacing: 10) {
                         ForEach(relationshipOptions, id: \.self) { option in
                             Button {
@@ -347,10 +348,10 @@ private struct PatientStep: View {
                                 Text(option)
                                     .font(.subheadline)
                                     .fontWeight(.medium)
-                                    .foregroundColor(relationship == option ? .white : RoundsColor.textPrimary)
+                                    .foregroundColor(relationship == option ? .white : .black)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 10)
-                                    .background(relationship == option ? RoundsColor.bluePrimary : RoundsColor.blueLight)
+                                    .background(relationship == option ? brandBlue : brandBlue.opacity(0.1))
                                     .cornerRadius(20)
                             }
                         }
@@ -367,26 +368,27 @@ private struct SituationStep: View {
     let patientName: String
     @Binding var situation: String
     var isFocused: FocusState<Bool>.Binding
+    let brandBlue: Color
     
     var body: some View {
-        VStack(spacing: 32) {
-            VStack(spacing: 12) {
+        VStack(spacing: 24) {
+            VStack(spacing: 8) {
                 Text("Tell me about \(patientName)'s situation")
                     .font(.title2)
                     .fontWeight(.semibold)
-                    .foregroundColor(RoundsColor.textPrimary)
+                    .foregroundColor(.black)
                     .multilineTextAlignment(.center)
                 
                 Text("In 1-2 sentences, what's the medical situation?")
                     .font(.subheadline)
-                    .foregroundColor(RoundsColor.textSecondary)
+                    .foregroundColor(.gray)
             }
             
-            TextField("e.g., recovering from heart surgery, undergoing chemo for lymphoma...", text: $situation, axis: .vertical)
+            TextField("e.g., recovering from heart surgery, undergoing chemo...", text: $situation, axis: .vertical)
                 .font(.body)
                 .lineLimit(3...5)
                 .padding(16)
-                .background(RoundsColor.blueLight)
+                .background(brandBlue.opacity(0.08))
                 .cornerRadius(12)
                 .focused(isFocused)
         }
@@ -398,36 +400,36 @@ private struct SituationStep: View {
 private struct PermissionsStep: View {
     @Binding var permissionGranted: Bool
     let onRequestPermission: () -> Void
+    let brandBlue: Color
     
     var body: some View {
-        VStack(spacing: 32) {
-            // Mic icon
+        VStack(spacing: 28) {
             Image(systemName: permissionGranted ? "checkmark.circle.fill" : "mic.circle.fill")
                 .font(.system(size: 64))
-                .foregroundColor(permissionGranted ? .green : RoundsColor.bluePrimary)
+                .foregroundColor(permissionGranted ? .green : brandBlue)
             
             VStack(spacing: 16) {
                 Text(permissionGranted ? "You're all set!" : "One more thing")
                     .font(.title2)
                     .fontWeight(.semibold)
-                    .foregroundColor(RoundsColor.textPrimary)
+                    .foregroundColor(.black)
                 
                 if permissionGranted {
                     Text("Microphone access enabled. You're ready to start recording appointments.")
                         .font(.body)
-                        .foregroundColor(RoundsColor.textSecondary)
+                        .foregroundColor(.gray)
                         .multilineTextAlignment(.center)
                         .lineSpacing(4)
                 } else {
                     Text("To capture appointment transcripts for you, Rounds AI needs permission to access your microphone.")
                         .font(.body)
-                        .foregroundColor(RoundsColor.textSecondary)
+                        .foregroundColor(.gray)
                         .multilineTextAlignment(.center)
                         .lineSpacing(4)
                     
                     Text("Your recordings stay on your device and are never shared without your permission.")
                         .font(.caption)
-                        .foregroundColor(RoundsColor.textSecondary)
+                        .foregroundColor(.gray)
                         .multilineTextAlignment(.center)
                         .padding(.top, 8)
                 }
@@ -435,8 +437,6 @@ private struct PermissionsStep: View {
         }
     }
 }
-
-// MARK: - Preview
 
 #Preview {
     OnboardingFlow(profileStore: ProfileStore.shared) {

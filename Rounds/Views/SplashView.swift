@@ -1,25 +1,23 @@
 //
 //  SplashView.swift
-//  Rounds
+//  Rounds AI
 //
-//  Solid blue background, white logo. Clean and calm.
-//  Based on Katie's reference design.
+//  Solid blue splash screen with white logo
+//  Clean and calm - matches your reference screenshot
 //
 
 import SwiftUI
 
 struct SplashView: View {
-    // The friendly blue from Katie's reference design
-    private let splashBlue = Color(red: 32/255, green: 150/255, blue: 243/255)
     
     var body: some View {
         ZStack {
-            // Solid blue background
-            splashBlue
+            // Solid blue background (from your reference)
+            Color(red: 0/255, green: 172/255, blue: 238/255)
                 .ignoresSafeArea()
 
-            VStack(spacing: 16) {
-                // Heart in white circle (like reference)
+            VStack(spacing: 20) {
+                // White circle with blue heart inside (matching reference)
                 ZStack {
                     Circle()
                         .fill(.white)
@@ -27,19 +25,18 @@ struct SplashView: View {
                     
                     Image(systemName: "heart.fill")
                         .font(.system(size: 44, weight: .regular))
-                        .foregroundColor(splashBlue)
+                        .foregroundColor(Color(red: 0/255, green: 172/255, blue: 238/255))
                 }
 
                 // Wordmark
-                Text("Rounds")
-                    .font(.system(size: 44, weight: .bold, design: .rounded))
+                Text("Rounds AI")
+                    .font(.system(size: 38, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
 
-                // Tagline - AI focused
-                Text("Your AI medical assistant")
+                // Tagline
+                Text("I'm here when you're ready.")
                     .font(.system(size: 17, weight: .medium))
                     .foregroundColor(.white.opacity(0.9))
-                    .padding(.top, 4)
             }
         }
     }

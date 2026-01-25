@@ -1,6 +1,6 @@
 //
 //  RecordingSession.swift
-//  Rounds
+//  Rounds AI
 //
 //  Persisted recording session with transcript and AI analysis.
 //
@@ -9,17 +9,18 @@ import Foundation
 
 struct RecordingSession: Identifiable, Codable {
     let id: UUID
-    let date: Date
+    let startTime: Date
     let transcript: String
     let durationSeconds: Int
     var aiExplanation: String?
     var keyPoints: [String]
     var followUpQuestions: [String]
     var conversationHistory: [ConversationMessage]
+    var analysis: RoundsAnalysis?
 
     init(
         id: UUID = UUID(),
-        date: Date = Date(),
+        startTime: Date = Date(),
         transcript: String,
         durationSeconds: Int,
         aiExplanation: String? = nil,
@@ -28,7 +29,7 @@ struct RecordingSession: Identifiable, Codable {
         conversationHistory: [ConversationMessage] = []
     ) {
         self.id = id
-        self.date = date
+        self.startTime = startTime
         self.transcript = transcript
         self.durationSeconds = durationSeconds
         self.aiExplanation = aiExplanation
@@ -36,12 +37,15 @@ struct RecordingSession: Identifiable, Codable {
         self.followUpQuestions = followUpQuestions
         self.conversationHistory = conversationHistory
     }
+    
+    // Alias for backwards compatibility
+    var date: Date { startTime }
 
     var formattedDate: String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
-        return formatter.string(from: date)
+        return formatter.string(from: startTime)
     }
 
     var formattedDuration: String {
@@ -51,7 +55,7 @@ struct RecordingSession: Identifiable, Codable {
     }
 
     var shareableText: String {
-        var text = "Rounds Summary – \(formattedDate)\n\n"
+        var text = "Rounds AI Summary – \(formattedDate)\n\n"
 
         if let explanation = aiExplanation, !explanation.isEmpty {
             text += "What This Means:\n\(explanation)\n\n"

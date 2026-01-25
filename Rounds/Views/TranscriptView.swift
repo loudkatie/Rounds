@@ -1,9 +1,8 @@
 //
 //  TranscriptView.swift
-//  Rounds
+//  Rounds AI
 //
-//  DEPRECATED - Use LandingView instead
-//  Kept for backwards compatibility
+//  DEPRECATED - Not used in current version
 //
 
 import SwiftUI
@@ -12,7 +11,6 @@ struct TranscriptView: View {
     @ObservedObject var viewModel: TranscriptViewModel
     
     var body: some View {
-        // Redirect to LandingView
         Text("Use LandingView")
     }
 }

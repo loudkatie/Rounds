@@ -1,9 +1,9 @@
 //
 //  LandingView.swift
-//  Rounds
+//  Rounds AI
 //
-//  Core recording interface. Jitterbug simple.
-//  Matches Katie's previous iteration style.
+//  Main recording screen - matches your reference screenshot
+//  Spaced wordmark, heart icon, big mic button, transcript box, Ready pill
 //
 
 import SwiftUI
@@ -16,122 +16,270 @@ struct LandingView: View {
     @State private var showPreviousRounds = false
     @State private var showShareSheet = false
     @State private var showFullTranscript = false
-    @State private var showHelp = false
     @FocusState private var isFollowUpFocused: Bool
 
     var body: some View {
         VStack(spacing: 0) {
-            // Scrollable content
             ScrollViewReader { scrollProxy in
                 ScrollView {
                     VStack(spacing: 0) {
                         
-                        // MARK: - Header (Rounds AI wordmark)
-                        RoundsHeader()
-                            .padding(.top, 60)
-                            .padding(.bottom, 48)
+                        // MARK: - Header (Heart + ROUNDS AI wordmark)
+                        VStack(spacing: 8) {
+                            // Heart icon
+                            Image(systemName: "heart")
+                                .font(.system(size: 32, weight: .light))
+                                .foregroundColor(RoundsColor.brandBlue)
+                            
+                            // Spaced wordmark
+                            Text("R O U N D S   A I")
+                                .font(.system(size: 26, weight: .medium))
+                                .tracking(6)
+                                .foregroundColor(.black)
+                        }
+                        .padding(.top, 60)
+                        .padding(.bottom, 40)
 
-                        // MARK: - Record / Stop Button
-                        RecordButton(viewModel: viewModel)
+                        // MARK: - Record Button
+                        Button {
+                            Task {
+                                if viewModel.isSessionActive {
+                                    await viewModel.endSession()
+                                } else {
+                                    await viewModel.startSession()
+                                }
+                            }
+                        } label: {
+                            ZStack {
+                                Circle()
+                                    .fill(RoundsColor.brandBlue)
+                                    .frame(width: 120, height: 120)
+                                    .shadow(color: RoundsColor.brandBlue.opacity(0.3), radius: 12, y: 6)
 
-                        // MARK: - Duration (when recording)
+                                if viewModel.isSessionActive {
+                                    // Stop icon (square)
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .fill(.white)
+                                        .frame(width: 36, height: 36)
+                                } else {
+                                    // Mic icon
+                                    Image(systemName: "mic.fill")
+                                        .font(.system(size: 44, weight: .medium))
+                                        .foregroundColor(.white)
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
+
+                        // Duration when recording
                         if viewModel.isSessionActive {
                             Text(viewModel.formattedDuration)
-                                .font(.system(size: 28, weight: .medium, design: .monospaced))
-                                .foregroundColor(RoundsColor.textPrimary)
-                                .padding(.top, 20)
+                                .font(.system(size: 24, weight: .medium, design: .monospaced))
+                                .foregroundColor(.black)
+                                .padding(.top, 16)
                         }
 
-                        Spacer().frame(height: 48)
+                        Spacer().frame(height: 32)
 
-                        // MARK: - Live Transcription Section
-                        LiveTranscriptSection(
-                            transcript: viewModel.liveTranscript,
-                            isRecording: viewModel.isSessionActive,
-                            hasAnalysis: viewModel.analysis != nil
-                        )
+                        // MARK: - Live Transcription Box
+                        VStack(alignment: .leading, spacing: 0) {
+                            // Transcript content area
+                            ZStack(alignment: .topLeading) {
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(RoundsColor.brandBlue.opacity(0.08))
+                                    .frame(height: 140)
+                                
+                                if viewModel.liveTranscript.isEmpty {
+                                    Text(viewModel.isSessionActive ? "Listening..." : "Tap the microphone to start")
+                                        .font(.body)
+                                        .foregroundColor(.gray)
+                                        .padding(16)
+                                } else {
+                                    ScrollView {
+                                        Text(viewModel.liveTranscript)
+                                            .font(.body)
+                                            .foregroundColor(.black)
+                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .padding(16)
+                                    }
+                                    .frame(height: 140)
+                                }
+                            }
+                        }
                         .padding(.horizontal, 24)
 
-                        // MARK: - Status Pill (Ready state)
-                        if viewModel.analysis == nil && !viewModel.isSessionActive && viewModel.liveTranscript.isEmpty {
-                            StatusPill()
-                                .padding(.top, 24)
+                        Spacer().frame(height: 24)
+
+                        // MARK: - Ready Pill (when idle)
+                        if !viewModel.isSessionActive && viewModel.analysis == nil && viewModel.liveTranscript.isEmpty {
+                            HStack(spacing: 8) {
+                                Circle()
+                                    .fill(Color.green)
+                                    .frame(width: 10, height: 10)
+                                
+                                Text("Ready")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.black)
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.vertical, 10)
+                            .background(Color(UIColor.systemGray6))
+                            .cornerRadius(20)
                         }
 
-                        // MARK: - Post-Recording Actions (before analysis)
+                        // MARK: - Post-Recording Actions
                         if !viewModel.isSessionActive && !viewModel.liveTranscript.isEmpty && viewModel.analysis == nil {
-                            PostRecordingActions(viewModel: viewModel)
-                                .padding(.top, 24)
-                                .padding(.horizontal, 24)
+                            VStack(spacing: 16) {
+                                // Analyze button
+                                Button {
+                                    Task {
+                                        await viewModel.analyzeWithRoundsAI()
+                                    }
+                                } label: {
+                                    HStack(spacing: 10) {
+                                        if viewModel.isAnalyzing {
+                                            ProgressView()
+                                                .tint(.white)
+                                        } else {
+                                            Image(systemName: "heart.fill")
+                                                .font(.system(size: 16))
+                                        }
+                                        Text(viewModel.isAnalyzing ? "Analyzing..." : "Translate with Rounds AI")
+                                            .font(.headline)
+                                            .fontWeight(.semibold)
+                                    }
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 16)
+                                    .background(viewModel.isAnalyzing ? RoundsColor.brandBlue.opacity(0.5) : RoundsColor.brandBlue)
+                                    .cornerRadius(14)
+                                }
+                                .disabled(viewModel.isAnalyzing)
+
+                                // Discard button
+                                Button {
+                                    viewModel.discardRecording()
+                                } label: {
+                                    HStack(spacing: 6) {
+                                        Image(systemName: "trash")
+                                            .font(.system(size: 14))
+                                        Text("Discard & Start Over")
+                                            .font(.subheadline)
+                                    }
+                                    .foregroundColor(.red.opacity(0.8))
+                                }
+                            }
+                            .padding(.horizontal, 24)
+                            .padding(.top, 20)
                         }
 
                         // MARK: - Analysis Results
                         if let analysis = viewModel.analysis {
-                            AnalysisResultsView(
+                            AnalysisResultsSection(
                                 analysis: analysis,
                                 transcript: viewModel.liveTranscript,
                                 showFullTranscript: $showFullTranscript,
                                 patientName: profileStore.patientName,
-                                sessionDate: viewModel.currentSession?.date ?? Date()
-                            )
-                            .padding(.top, 32)
-                            .padding(.horizontal, 24)
-
-                            // Conversation History
-                            if !viewModel.conversationHistory.isEmpty {
-                                ConversationHistoryView(messages: viewModel.conversationHistory)
-                                    .padding(.top, 24)
-                                    .padding(.horizontal, 24)
-                            }
-
-                            // Follow-up Input
-                            FollowUpInputView(
-                                text: $followUpText,
-                                isDisabled: viewModel.isAnalyzing,
-                                isFocused: $isFollowUpFocused,
-                                onSubmit: {
-                                    Task {
-                                        let question = followUpText
-                                        followUpText = ""
-                                        await viewModel.askFollowUp(question)
-                                    }
-                                }
+                                sessionDate: viewModel.currentSession?.startTime ?? Date()
                             )
                             .padding(.top, 24)
+                            .padding(.horizontal, 24)
+
+                            // Follow-up Input
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Ask Rounds AI")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.gray)
+                                
+                                HStack(spacing: 12) {
+                                    TextField("Ask a follow-up question...", text: $followUpText)
+                                        .textFieldStyle(.plain)
+                                        .padding(14)
+                                        .background(Color(UIColor.systemGray6))
+                                        .cornerRadius(12)
+                                        .focused($isFollowUpFocused)
+                                        .submitLabel(.send)
+                                        .onSubmit {
+                                            if !followUpText.isEmpty && !viewModel.isAnalyzing {
+                                                Task {
+                                                    let q = followUpText
+                                                    followUpText = ""
+                                                    await viewModel.askFollowUp(q)
+                                                }
+                                            }
+                                        }
+
+                                    Button {
+                                        Task {
+                                            let q = followUpText
+                                            followUpText = ""
+                                            await viewModel.askFollowUp(q)
+                                        }
+                                    } label: {
+                                        Image(systemName: "arrow.up.circle.fill")
+                                            .font(.system(size: 36))
+                                            .foregroundColor(followUpText.isEmpty ? .gray : RoundsColor.brandBlue)
+                                    }
+                                    .disabled(followUpText.isEmpty || viewModel.isAnalyzing)
+                                }
+                            }
+                            .padding(.top, 20)
                             .padding(.horizontal, 24)
                             .id("followUpInput")
 
-                            // Share Actions
-                            ShareActionsView(
-                                viewModel: viewModel,
-                                showShareSheet: $showShareSheet,
-                                patientName: profileStore.patientName
-                            )
-                            .padding(.top, 24)
+                            // Share buttons
+                            VStack(spacing: 12) {
+                                Button {
+                                    showShareSheet = true
+                                } label: {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "square.and.arrow.up")
+                                            .font(.system(size: 14))
+                                        Text("Share AI Summary")
+                                            .font(.subheadline)
+                                            .fontWeight(.medium)
+                                    }
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 14)
+                                    .background(RoundsColor.brandBlue)
+                                    .cornerRadius(12)
+                                }
+
+                                Button {
+                                    viewModel.startNewRecording()
+                                } label: {
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "mic.badge.plus")
+                                            .font(.system(size: 14))
+                                        Text("New Recording")
+                                            .font(.subheadline)
+                                            .fontWeight(.medium)
+                                    }
+                                    .foregroundColor(RoundsColor.brandBlue)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 14)
+                                    .background(Color(UIColor.systemGray6))
+                                    .cornerRadius(12)
+                                }
+                            }
+                            .padding(.top, 20)
                             .padding(.horizontal, 24)
                         }
 
-                        // Bottom spacing for footer
-                        Spacer().frame(height: 100)
+                        Spacer().frame(height: 120)
                     }
                 }
                 .scrollIndicators(.hidden)
                 .scrollDismissesKeyboard(.interactively)
-                .onChange(of: viewModel.conversationHistory.count) { _, _ in
-                    withAnimation {
-                        scrollProxy.scrollTo("followUpInput", anchor: .bottom)
-                    }
-                }
             }
             
-            // MARK: - Anchored Footer Navigation
-            FooterNavigation(
-                showPreviousRounds: $showPreviousRounds,
-                showHelp: $showHelp,
-                hasHistory: !sessionStore.sessions.isEmpty
-            )
+            // MARK: - Footer (anchored)
+            FooterBar(showPreviousRounds: $showPreviousRounds, hasHistory: !sessionStore.sessions.isEmpty)
         }
-        .background(RoundsColor.background.ignoresSafeArea())
+        .background(Color.white.ignoresSafeArea())
         .sheet(isPresented: $showPreviousRounds) {
             PreviousRoundsView(viewModel: viewModel, sessionStore: sessionStore)
         }
@@ -141,11 +289,10 @@ struct LandingView: View {
             }
         }
         .sheet(isPresented: $showFullTranscript) {
-            FullTranscriptView(
+            FullTranscriptSheet(
                 transcript: viewModel.liveTranscript,
                 patientName: profileStore.patientName,
-                sessionDate: viewModel.currentSession?.date ?? Date(),
-                onDismiss: { showFullTranscript = false }
+                sessionDate: viewModel.currentSession?.startTime ?? Date()
             )
         }
     }
@@ -153,236 +300,52 @@ struct LandingView: View {
     private func formatShareText(session: RecordingSession) -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "EEEE, MMM d, yyyy"
-        let dateString = dateFormatter.string(from: session.date)
+        let dateString = dateFormatter.string(from: session.startTime)
         
-        var text = "📋 \(profileStore.patientName)'s Medical Appointment Recap\n"
+        var text = "📋 \(profileStore.patientName)'s Appointment Recap\n"
         text += "📅 \(dateString)\n\n"
         
-        if let explanation = session.aiExplanation {
+        if let analysis = viewModel.analysis {
             text += "KEY POINTS:\n"
-            for point in session.keyPoints.prefix(3) {
+            for point in analysis.summaryPoints.prefix(3) {
                 text += "• \(point)\n"
             }
-            text += "\nSUMMARY:\n\(explanation)\n"
-            
-            if !session.followUpQuestions.isEmpty {
-                text += "\nQUESTIONS TO CONSIDER:\n"
-                for (i, q) in session.followUpQuestions.prefix(3).enumerated() {
-                    text += "\(i+1). \(q)\n"
-                }
-            }
+            text += "\nSUMMARY:\n\(analysis.explanation)\n"
         }
         
-        text += "\n—\nGenerated by Rounds AI\nloudlabs.xyz"
+        text += "\n---\nGenerated by Rounds AI"
         return text
     }
 }
 
-// MARK: - Rounds Header (Stacked icon + wordmark)
+// MARK: - Analysis Results Section
 
-private struct RoundsHeader: View {
-    var body: some View {
-        VStack(spacing: 6) {
-            // Heart icon (outline style like previous iteration)
-            Image(systemName: "heart")
-                .font(.system(size: 36, weight: .light))
-                .foregroundColor(RoundsColor.bluePrimary)
-            
-            // Spaced wordmark - matching previous iteration
-            Text("R O U N D S")
-                .font(.system(size: 32, weight: .semibold))
-                .tracking(8)
-                .foregroundColor(RoundsColor.textPrimary)
-        }
-    }
-}
-
-// MARK: - Record Button
-
-private struct RecordButton: View {
-    @ObservedObject var viewModel: TranscriptViewModel
-
-    var body: some View {
-        Button {
-            Task {
-                if viewModel.isSessionActive {
-                    await viewModel.endSession()
-                } else {
-                    await viewModel.startSession()
-                }
-            }
-        } label: {
-            ZStack {
-                Circle()
-                    .fill(viewModel.isSessionActive ? Color.red : RoundsColor.bluePrimary)
-                    .frame(width: 140, height: 140)
-                    .shadow(
-                        color: (viewModel.isSessionActive ? Color.red : RoundsColor.bluePrimary).opacity(0.3),
-                        radius: 16,
-                        y: 6
-                    )
-
-                if viewModel.isSessionActive {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(.white)
-                        .frame(width: 44, height: 44)
-                } else {
-                    Image(systemName: "mic.fill")
-                        .font(.system(size: 52, weight: .medium))
-                        .foregroundColor(.white)
-                }
-            }
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(viewModel.isSessionActive ? "Stop recording" : "Start recording")
-    }
-}
-
-// MARK: - Live Transcript Section
-
-private struct LiveTranscriptSection: View {
-    let transcript: String
-    let isRecording: Bool
-    let hasAnalysis: Bool
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // Transcript card
-            ScrollView {
-                ScrollViewReader { proxy in
-                    VStack(alignment: .leading, spacing: 0) {
-                        if transcript.isEmpty {
-                            Text("Tap the microphone to start")
-                                .font(.body)
-                                .foregroundColor(RoundsColor.textSecondary)
-                                .frame(maxWidth: .infinity, alignment: .center)
-                                .padding(.top, 20)
-                        } else {
-                            Text(transcript)
-                                .font(.body)
-                                .foregroundColor(RoundsColor.textPrimary)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .id("transcript")
-                        }
-                    }
-                    .padding(16)
-                    .onChange(of: transcript) { _, _ in
-                        withAnimation(.easeOut(duration: 0.1)) {
-                            proxy.scrollTo("transcript", anchor: .bottom)
-                        }
-                    }
-                }
-            }
-            .frame(height: hasAnalysis ? 0 : 140)
-            .opacity(hasAnalysis ? 0 : 1)
-            .background(RoundsColor.card)
-            .cornerRadius(16)
-        }
-    }
-}
-
-// MARK: - Status Pill
-
-private struct StatusPill: View {
-    var body: some View {
-        HStack(spacing: 8) {
-            Circle()
-                .fill(Color.green)
-                .frame(width: 10, height: 10)
-            
-            Text("Ready")
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundColor(RoundsColor.textPrimary)
-        }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
-        .background(RoundsColor.card)
-        .cornerRadius(24)
-    }
-}
-
-// MARK: - Post Recording Actions
-
-private struct PostRecordingActions: View {
-    @ObservedObject var viewModel: TranscriptViewModel
-
-    var body: some View {
-        VStack(spacing: 16) {
-            // Analyze button
-            if viewModel.hasTranscriptToAnalyze {
-                Button {
-                    Task {
-                        await viewModel.analyzeWithRoundsAI()
-                    }
-                } label: {
-                    HStack(spacing: 12) {
-                        if viewModel.isAnalyzing {
-                            ProgressView()
-                                .tint(.white)
-                        } else {
-                            Image(systemName: "sparkles")
-                                .font(.system(size: 18, weight: .medium))
-                        }
-
-                        Text(viewModel.isAnalyzing ? "Analyzing..." : "Translate with Rounds AI")
-                            .font(.headline)
-                            .fontWeight(.semibold)
-                    }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 18)
-                    .background(viewModel.isAnalyzing ? RoundsColor.bluePrimary.opacity(0.5) : RoundsColor.bluePrimary)
-                    .cornerRadius(16)
-                }
-                .disabled(viewModel.isAnalyzing)
-            }
-
-            // Discard button
-            Button {
-                viewModel.discardRecording()
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "trash")
-                        .font(.system(size: 14))
-                    Text("Discard & Start Over")
-                        .font(.subheadline)
-                }
-                .foregroundColor(.red.opacity(0.8))
-            }
-        }
-    }
-}
-
-// MARK: - Analysis Results View
-
-private struct AnalysisResultsView: View {
+private struct AnalysisResultsSection: View {
     let analysis: RoundsAnalysis
     let transcript: String
     @Binding var showFullTranscript: Bool
     let patientName: String
     let sessionDate: Date
 
-    private var formattedDate: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, MMM d"
-        return formatter.string(from: sessionDate)
-    }
-    
-    private var dayName: String {
+    private var dayOfWeek: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE"
         return formatter.string(from: sessionDate)
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
+        VStack(alignment: .leading, spacing: 20) {
             
-            // Session header with date
-            Text("Recap: \(formattedDate)")
-                .font(.title2)
-                .fontWeight(.bold)
-                .foregroundColor(RoundsColor.textPrimary)
+            // Date header
+            HStack {
+                Image(systemName: "heart.fill")
+                    .font(.system(size: 18))
+                    .foregroundColor(RoundsColor.brandBlue)
+                
+                Text("Recap from \(dayOfWeek)")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+            }
             
             // View Full Transcript Button
             Button {
@@ -390,7 +353,7 @@ private struct AnalysisResultsView: View {
             } label: {
                 HStack {
                     Image(systemName: "doc.text")
-                        .font(.system(size: 15))
+                        .font(.system(size: 14))
                     Text("View Full Transcript")
                         .font(.subheadline)
                         .fontWeight(.medium)
@@ -398,104 +361,92 @@ private struct AnalysisResultsView: View {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 12, weight: .semibold))
                 }
-                .foregroundColor(RoundsColor.bluePrimary)
-                .padding(16)
-                .background(RoundsColor.card)
+                .foregroundColor(RoundsColor.brandBlue)
+                .padding(14)
+                .background(Color(UIColor.systemGray6))
                 .cornerRadius(12)
             }
 
-            // Key Points (3 max TL;DR)
+            // Key Points (max 3)
             if !analysis.summaryPoints.isEmpty {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("\(dayName)'s Key Points")
-                        .font(.headline)
-                        .foregroundColor(RoundsColor.textPrimary)
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("\(dayOfWeek)'s Key Points")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
 
                     ForEach(Array(analysis.summaryPoints.prefix(3).enumerated()), id: \.offset) { _, point in
-                        HStack(alignment: .top, spacing: 12) {
+                        HStack(alignment: .top, spacing: 10) {
                             Circle()
-                                .fill(RoundsColor.bluePrimary)
+                                .fill(RoundsColor.brandBlue)
                                 .frame(width: 6, height: 6)
-                                .padding(.top, 8)
+                                .padding(.top, 7)
 
                             Text(point)
                                 .font(.body)
-                                .foregroundColor(RoundsColor.textPrimary)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .lineSpacing(2)
                         }
                     }
                 }
-                .padding(20)
+                .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(RoundsColor.card)
-                .cornerRadius(16)
+                .background(Color(UIColor.systemGray6))
+                .cornerRadius(12)
             }
 
-            // What We Discussed (Summary)
-            VStack(alignment: .leading, spacing: 14) {
-                Text("\(dayName)'s Discussion")
-                    .font(.headline)
-                    .foregroundColor(RoundsColor.textPrimary)
+            // Discussion Summary
+            VStack(alignment: .leading, spacing: 10) {
+                Text("\(dayOfWeek) Discussion")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
 
                 Text(analysis.explanation)
                     .font(.body)
-                    .foregroundColor(RoundsColor.textPrimary)
-                    .fixedSize(horizontal: false, vertical: true)
                     .lineSpacing(4)
             }
-            .padding(20)
+            .padding(16)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(RoundsColor.card)
-            .cornerRadius(16)
+            .background(Color(UIColor.systemGray6))
+            .cornerRadius(12)
 
-            // Consider Asking
+            // Questions to Consider
             if !analysis.followUpQuestions.isEmpty {
-                VStack(alignment: .leading, spacing: 16) {
+                VStack(alignment: .leading, spacing: 12) {
                     Text("Consider Asking...")
-                        .font(.headline)
-                        .foregroundColor(RoundsColor.textPrimary)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
 
                     ForEach(Array(analysis.followUpQuestions.enumerated()), id: \.offset) { index, question in
-                        VStack(alignment: .leading, spacing: 0) {
-                            HStack(alignment: .top, spacing: 12) {
-                                Text("\(index + 1).")
-                                    .font(.body)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(RoundsColor.bluePrimary)
-                                    .frame(width: 24, alignment: .leading)
+                        HStack(alignment: .top, spacing: 10) {
+                            Text("\(index + 1).")
+                                .font(.body)
+                                .fontWeight(.semibold)
+                                .foregroundColor(RoundsColor.brandBlue)
+                                .frame(width: 20, alignment: .leading)
 
-                                Text(question)
-                                    .font(.body)
-                                    .foregroundColor(RoundsColor.textPrimary)
-                                    .fixedSize(horizontal: false, vertical: true)
-                                    .lineSpacing(2)
-                            }
-                            
-                            if index < analysis.followUpQuestions.count - 1 {
-                                Divider()
-                                    .padding(.top, 14)
-                                    .padding(.leading, 36)
-                            }
+                            Text(question)
+                                .font(.body)
+                        }
+                        
+                        if index < analysis.followUpQuestions.count - 1 {
+                            Divider().padding(.leading, 30)
                         }
                     }
                 }
-                .padding(20)
+                .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(RoundsColor.card)
-                .cornerRadius(16)
+                .background(Color(UIColor.systemGray6))
+                .cornerRadius(12)
             }
         }
     }
 }
 
-// MARK: - Full Transcript View (Sheet)
+// MARK: - Full Transcript Sheet
 
-private struct FullTranscriptView: View {
+private struct FullTranscriptSheet: View {
     let transcript: String
     let patientName: String
     let sessionDate: Date
-    let onDismiss: () -> Void
+    @Environment(\.dismiss) private var dismiss
     
     private var formattedDate: String {
         let formatter = DateFormatter()
@@ -506,209 +457,48 @@ private struct FullTranscriptView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
-                    // Header
-                    VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 20) {
+                    VStack(alignment: .leading, spacing: 6) {
                         Text("\(patientName)'s Appointment")
                             .font(.title2)
                             .fontWeight(.bold)
-                            .foregroundColor(RoundsColor.textPrimary)
                         
                         Text(formattedDate)
                             .font(.subheadline)
-                            .foregroundColor(RoundsColor.textSecondary)
+                            .foregroundColor(.gray)
                     }
                     
                     Divider()
                     
-                    // Transcript
                     Text(transcript)
                         .font(.body)
-                        .foregroundColor(RoundsColor.textPrimary)
                         .lineSpacing(6)
                 }
                 .padding(24)
             }
-            .background(RoundsColor.background)
             .navigationTitle("Full Transcript")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Done") {
-                        onDismiss()
-                    }
-                    .foregroundColor(RoundsColor.bluePrimary)
+                    Button("Done") { dismiss() }
+                        .foregroundColor(RoundsColor.brandBlue)
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    ShareLink(item: formatTranscriptForShare()) {
+                    ShareLink(item: "📋 \(patientName)'s Appointment Transcript\n📅 \(formattedDate)\n\n---\n\n\(transcript)\n\n---\nGenerated by Rounds AI") {
                         Image(systemName: "square.and.arrow.up")
-                            .foregroundColor(RoundsColor.bluePrimary)
+                            .foregroundColor(RoundsColor.brandBlue)
                     }
                 }
             }
         }
     }
-    
-    private func formatTranscriptForShare() -> String {
-        """
-        📋 \(patientName)'s Appointment Transcript
-        📅 \(formattedDate)
-        
-        ───────────────────────
-        
-        \(transcript)
-        
-        ───────────────────────
-        Generated by Rounds AI
-        loudlabs.xyz
-        """
-    }
 }
 
-// MARK: - Conversation History
+// MARK: - Footer Bar
 
-private struct ConversationHistoryView: View {
-    let messages: [ConversationMessage]
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Follow-up Q&A")
-                .font(.headline)
-                .foregroundColor(RoundsColor.textPrimary)
-
-            ForEach(messages) { message in
-                MessageBubble(message: message)
-            }
-        }
-    }
-}
-
-private struct MessageBubble: View {
-    let message: ConversationMessage
-
-    var body: some View {
-        HStack {
-            if message.isUser { Spacer() }
-
-            VStack(alignment: message.isUser ? .trailing : .leading, spacing: 4) {
-                Text(message.isUser ? "You" : "Rounds AI")
-                    .font(.caption)
-                    .foregroundColor(RoundsColor.textSecondary)
-
-                Text(message.content)
-                    .font(.body)
-                    .foregroundColor(message.isUser ? .white : RoundsColor.textPrimary)
-                    .padding(12)
-                    .background(message.isUser ? RoundsColor.bluePrimary : RoundsColor.card)
-                    .cornerRadius(12)
-            }
-
-            if !message.isUser { Spacer() }
-        }
-    }
-}
-
-// MARK: - Follow-up Input
-
-private struct FollowUpInputView: View {
-    @Binding var text: String
-    let isDisabled: Bool
-    var isFocused: FocusState<Bool>.Binding
-    let onSubmit: () -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("Ask Rounds AI")
-                .font(.headline)
-                .foregroundColor(RoundsColor.textPrimary)
-            
-            HStack(spacing: 12) {
-                TextField("Ask a follow-up question...", text: $text)
-                    .textFieldStyle(.plain)
-                    .padding(14)
-                    .background(RoundsColor.card)
-                    .cornerRadius(12)
-                    .focused(isFocused)
-                    .submitLabel(.send)
-                    .onSubmit {
-                        if !text.isEmpty && !isDisabled {
-                            onSubmit()
-                        }
-                    }
-
-                Button {
-                    onSubmit()
-                } label: {
-                    if isDisabled {
-                        ProgressView()
-                            .tint(RoundsColor.bluePrimary)
-                            .frame(width: 44, height: 44)
-                    } else {
-                        Image(systemName: "arrow.up.circle.fill")
-                            .font(.system(size: 40))
-                            .foregroundColor(text.isEmpty ? RoundsColor.textSecondary : RoundsColor.bluePrimary)
-                    }
-                }
-                .disabled(text.isEmpty || isDisabled)
-            }
-        }
-    }
-}
-
-// MARK: - Share Actions
-
-private struct ShareActionsView: View {
-    @ObservedObject var viewModel: TranscriptViewModel
-    @Binding var showShareSheet: Bool
-    let patientName: String
-
-    var body: some View {
-        VStack(spacing: 12) {
-            // Share Summary
-            Button {
-                showShareSheet = true
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "square.and.arrow.up")
-                        .font(.system(size: 14))
-                    Text("Share AI Summary")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                }
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(RoundsColor.bluePrimary)
-                .cornerRadius(12)
-            }
-
-            // New Recording
-            Button {
-                viewModel.startNewRecording()
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "mic.badge.plus")
-                        .font(.system(size: 14))
-                    Text("New Recording")
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                }
-                .foregroundColor(RoundsColor.bluePrimary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(RoundsColor.card)
-                .cornerRadius(12)
-            }
-        }
-    }
-}
-
-// MARK: - Footer Navigation (Anchored to bottom)
-
-private struct FooterNavigation: View {
+private struct FooterBar: View {
     @Binding var showPreviousRounds: Bool
-    @Binding var showHelp: Bool
     let hasHistory: Bool
 
     var body: some View {
@@ -716,48 +506,37 @@ private struct FooterNavigation: View {
             Divider()
             
             HStack {
-                // Archive / Past Rounds
-                Button {
-                    showPreviousRounds = true
-                } label: {
-                    VStack(spacing: 4) {
-                        Image(systemName: "archivebox")
-                            .font(.system(size: 22))
-                        Text("Archive")
-                            .font(.caption2)
+                // Archive button
+                if hasHistory {
+                    Button {
+                        showPreviousRounds = true
+                    } label: {
+                        VStack(spacing: 4) {
+                            Image(systemName: "archivebox")
+                                .font(.system(size: 20))
+                            Text("Archive")
+                                .font(.caption2)
+                        }
+                        .foregroundColor(.gray)
                     }
-                    .foregroundColor(hasHistory ? RoundsColor.textSecondary : RoundsColor.textSecondary.opacity(0.4))
                 }
-                .disabled(!hasHistory)
-                .frame(maxWidth: .infinity)
                 
-                // Help
-                Button {
-                    showHelp = true
-                } label: {
-                    VStack(spacing: 4) {
-                        Image(systemName: "questionmark.circle")
-                            .font(.system(size: 22))
-                        Text("Help")
-                            .font(.caption2)
-                    }
-                    .foregroundColor(RoundsColor.textSecondary)
-                }
-                .frame(maxWidth: .infinity)
+                Spacer()
                 
                 // Powered by Loud Labs
                 Link(destination: URL(string: "https://loudlabs.xyz")!) {
                     VStack(spacing: 2) {
                         Text("LOUD")
-                            .font(.system(size: 14, weight: .black, design: .default))
-                        Text("Powered by")
+                            .font(.system(size: 11, weight: .black))
+                            .tracking(1)
+                        Text("powered by")
                             .font(.system(size: 9))
                     }
-                    .foregroundColor(RoundsColor.textSecondary)
+                    .foregroundColor(.gray)
                 }
-                .frame(maxWidth: .infinity)
             }
-            .padding(.vertical, 10)
+            .padding(.horizontal, 32)
+            .padding(.vertical, 12)
             .background(Color.white)
         }
     }

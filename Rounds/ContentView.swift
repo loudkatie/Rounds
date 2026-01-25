@@ -1,8 +1,6 @@
 //
 //  ContentView.swift
-//  Rounds
-//
-//  Main entry - redirects to RootView
+//  Rounds AI
 //
 
 import SwiftUI

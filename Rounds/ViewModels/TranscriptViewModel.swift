@@ -2,14 +2,13 @@
 //  TranscriptViewModel.swift
 //  Rounds AI
 //
-//  Core ViewModel - Uses NATIVE Apple Speech Recognition + OpenAI for analysis
-//  NO ElevenLabs - pure iOS stack (except ChatGPT API)
+//  Core ViewModel - Uses Apple Speech Recognition + OpenAI for analysis
+//  NO Meta glasses, NO ElevenLabs - pure native iOS
 //
 
 import Foundation
 import Combine
 import AVFoundation
-import Speech
 
 @MainActor
 final class TranscriptViewModel: ObservableObject {
@@ -29,7 +28,7 @@ final class TranscriptViewModel: ObservableObject {
     @Published private(set) var currentSession: RecordingSession?
     @Published private(set) var conversationHistory: [ConversationMessage] = []
     
-    // MARK: - Dependencies (Native Apple)
+    // MARK: - Dependencies
     
     private let sttService = STTService()
     private let openAIService = OpenAIService.shared
@@ -44,7 +43,6 @@ final class TranscriptViewModel: ObservableObject {
     }
     
     private func setupBindings() {
-        // Bind to native Apple STT transcript updates
         sttService.onTranscriptUpdate = { [weak self] text in
             Task { @MainActor in
                 self?.liveTranscript = text
@@ -72,10 +70,10 @@ final class TranscriptViewModel: ObservableObject {
         errorMessage = nil
         elapsedSeconds = 0
         
-        // Start native Apple STT
+        // Start Apple Speech Recognition
         let started = sttService.startTranscription()
         guard started else {
-            errorMessage = "Failed to start transcription. Please try again."
+            errorMessage = "Failed to start speech recognition"
             return
         }
         
@@ -113,7 +111,7 @@ final class TranscriptViewModel: ObservableObject {
     
     func cancelSession() {
         stopDurationTimer()
-        sttService.cancelTranscription()
+        sttService.stopTranscription()
         liveTranscript = ""
         isSessionActive = false
         elapsedSeconds = 0
