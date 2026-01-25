@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CONFIG0BUILD001122334455 /* Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = CONFIG0PLIST001122334455 /* Config.plist */; };
 		00CAA0D3098F1307B5171BC1 /* MWDATMockDevice in Frameworks */ = {isa = PBXBuildFile; productRef = 67800147391143BE11021C09 /* MWDATMockDevice */; };
 		OPENAI_BUILD_001122334455 /* OpenAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = OPENAI001122334455667788 /* OpenAIService.swift */; };
 		PROFILE_BUILD_01122334455 /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = PROFILE01122334455667788 /* ProfileStore.swift */; };
@@ -33,6 +34,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		CONFIG0PLIST001122334455 /* Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Rounds/Config.plist; sourceTree = "<group>"; };
 		0EAC4EC60BDCC8C3B088F0F2 /* Rounds.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Rounds.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		19954A876539BD2B8B878A59 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3CCD495C8E952C21B4A0C638 /* TranscriptViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptViewModel.swift; sourceTree = "<group>"; };
@@ -228,6 +230,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CONFIG0BUILD001122334455 /* Config.plist in Resources */,
 				78882DE3754C795C63674F68 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -186,7 +186,7 @@ private struct OnboardingHeader: View {
     var body: some View {
         VStack(spacing: 6) {
             // Heart icon
-            Image(systemName: "heart.fill")
+            HeartPlusIcon(size: 28)
                 .font(.system(size: 28, weight: .regular))
                 .foregroundColor(brandBlue)
             
@@ -238,7 +238,7 @@ private struct WelcomeStep: View {
                     .fill(brandBlue.opacity(0.1))
                     .frame(width: 120, height: 120)
                 
-                Image(systemName: "heart.fill")
+                HeartPlusIcon(size: 28)
                     .font(.system(size: 56, weight: .regular))
                     .foregroundColor(brandBlue)
             }

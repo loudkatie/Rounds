@@ -3,10 +3,30 @@
 //  Rounds AI
 //
 //  Main recording screen - matches your reference screenshot
-//  Spaced wordmark, heart icon, big mic button, transcript box, Ready pill
+//  Spaced wordmark, heart+cross icon, big mic button, transcript box, Ready pill
 //
 
 import SwiftUI
+
+// MARK: - Heart + Cross Icon Component
+struct HeartPlusIcon: View {
+    var size: CGFloat = 32
+    var heartColor: Color = RoundsColor.brandBlue
+    var plusColor: Color = .white
+    
+    var body: some View {
+        ZStack {
+            Image(systemName: "heart.fill")
+                .font(.system(size: size, weight: .regular))
+                .foregroundColor(heartColor)
+            
+            Image(systemName: "plus")
+                .font(.system(size: size * 0.4, weight: .bold))
+                .foregroundColor(plusColor)
+                .offset(y: -size * 0.02)
+        }
+    }
+}
 
 struct LandingView: View {
     @ObservedObject var viewModel: TranscriptViewModel
@@ -24,12 +44,10 @@ struct LandingView: View {
                 ScrollView {
                     VStack(spacing: 0) {
                         
-                        // MARK: - Header (Heart + ROUNDS AI wordmark)
+                        // MARK: - Header (Heart+Cross + ROUNDS AI wordmark)
                         VStack(spacing: 8) {
-                            // Heart icon
-                            Image(systemName: "heart")
-                                .font(.system(size: 32, weight: .light))
-                                .foregroundColor(RoundsColor.brandBlue)
+                            // Heart + cross icon
+                            HeartPlusIcon(size: 36)
                             
                             // Spaced wordmark
                             Text("R O U N D S   A I")
@@ -142,8 +160,7 @@ struct LandingView: View {
                                             ProgressView()
                                                 .tint(.white)
                                         } else {
-                                            Image(systemName: "heart.fill")
-                                                .font(.system(size: 16))
+                                            HeartPlusIcon(size: 18, heartColor: .white, plusColor: RoundsColor.brandBlue)
                                         }
                                         Text(viewModel.isAnalyzing ? "Analyzing..." : "Translate with Rounds AI")
                                             .font(.headline)
@@ -172,6 +189,18 @@ struct LandingView: View {
                             }
                             .padding(.horizontal, 24)
                             .padding(.top, 20)
+                        }
+                        
+                        // MARK: - Error Message
+                        if let error = viewModel.errorMessage {
+                            Text(error)
+                                .font(.subheadline)
+                                .foregroundColor(.red)
+                                .padding()
+                                .background(Color.red.opacity(0.1))
+                                .cornerRadius(8)
+                                .padding(.horizontal, 24)
+                                .padding(.top, 16)
                         }
 
                         // MARK: - Analysis Results
@@ -338,9 +367,7 @@ private struct AnalysisResultsSection: View {
             
             // Date header
             HStack {
-                Image(systemName: "heart.fill")
-                    .font(.system(size: 18))
-                    .foregroundColor(RoundsColor.brandBlue)
+                HeartPlusIcon(size: 20)
                 
                 Text("Recap from \(dayOfWeek)")
                     .font(.headline)
