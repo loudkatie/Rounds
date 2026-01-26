@@ -220,9 +220,14 @@ final class OpenAIService: ObservableObject {
         - Original transcript: \(transcript.prefix(2000))...
         - Your previous explanation: \(previousExplanation.prefix(1000))...
 
-        Answer follow-up questions clearly and helpfully. Be warm and reassuring. If you don't know something or if they should ask their doctor, say so honestly.
-
-        Keep responses concise (2-3 paragraphs max). Use \(patientName)'s name naturally.
+        FORMATTING RULES (CRITICAL):
+        - Keep responses SHORT (3-5 sentences max for simple questions)
+        - Use bullet points for lists or multiple items
+        - Add a blank line between paragraphs for readability
+        - If suggesting questions to ask, format as a numbered list
+        - Bold key terms by wrapping in **asterisks**
+        
+        Be warm and reassuring. If you don't know something or if they should ask their doctor, say so honestly. Use \(patientName)'s name naturally.
         """
 
         var messages: [[String: String]] = [

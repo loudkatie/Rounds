@@ -10,8 +10,8 @@ import Foundation
 struct RecordingSession: Identifiable, Codable {
     let id: UUID
     let startTime: Date
-    let transcript: String
-    let durationSeconds: Int
+    var transcript: String  // Mutable for session chaining (append mode)
+    var durationSeconds: Int  // Mutable for session chaining
     var aiExplanation: String?
     var keyPoints: [String]
     var followUpQuestions: [String]

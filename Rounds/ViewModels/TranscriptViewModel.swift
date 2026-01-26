@@ -3,7 +3,8 @@
 //  Rounds AI
 //
 //  Core ViewModel - Uses Apple Speech Recognition + OpenAI for analysis
-//  NO Meta glasses, NO ElevenLabs - pure native iOS
+//  Supports SESSION CHAINING: Multiple record/stop cycles within 1 hour
+//  are treated as the same session and transcripts are appended.
 //
 
 import Foundation
@@ -28,6 +29,10 @@ final class TranscriptViewModel: ObservableObject {
     @Published private(set) var currentSession: RecordingSession?
     @Published private(set) var conversationHistory: [ConversationMessage] = []
     
+    // Session chaining - tracks when the session started for 1-hour window
+    private var sessionStartTime: Date?
+    private let sessionChainWindowSeconds: TimeInterval = 3600 // 1 hour
+    
     // MARK: - Dependencies
     
     private let sttService = STTService()
@@ -45,7 +50,15 @@ final class TranscriptViewModel: ObservableObject {
     private func setupBindings() {
         sttService.onTranscriptUpdate = { [weak self] text in
             Task { @MainActor in
-                self?.liveTranscript = text
+                guard let self = self else { return }
+                // If we have existing transcript from previous recording in this session,
+                // append the new text with a separator
+                if let existingBase = self.currentSession?.transcript, !existingBase.isEmpty {
+                    // Only update the "new" portion
+                    self.liveTranscript = existingBase + "\n\n[continued]\n\n" + text
+                } else {
+                    self.liveTranscript = text
+                }
             }
         }
     }
@@ -62,13 +75,32 @@ final class TranscriptViewModel: ObservableObject {
             return
         }
         
-        // Reset state
-        liveTranscript = ""
-        analysis = nil
-        conversationHistory = []
-        currentSession = nil
         errorMessage = nil
-        elapsedSeconds = 0
+        
+        // Check if we should CHAIN to existing session (within 1-hour window)
+        let now = Date()
+        let shouldChain = shouldChainToExistingSession(currentTime: now)
+        
+        if shouldChain {
+            // APPEND MODE: Keep existing transcript, analysis, and conversation
+            print("[TranscriptViewModel] Chaining to existing session (within 1-hour window)")
+            // Store the current transcript as the base for appending
+            if currentSession == nil {
+                currentSession = RecordingSession(
+                    transcript: liveTranscript,
+                    durationSeconds: elapsedSeconds
+                )
+            }
+        } else {
+            // NEW SESSION: Reset everything
+            print("[TranscriptViewModel] Starting fresh session")
+            liveTranscript = ""
+            analysis = nil
+            conversationHistory = []
+            currentSession = nil
+            elapsedSeconds = 0
+            sessionStartTime = now
+        }
         
         // Start Apple Speech Recognition
         let started = sttService.startTranscription()
@@ -79,7 +111,18 @@ final class TranscriptViewModel: ObservableObject {
         
         isSessionActive = true
         startDurationTimer()
-        print("[TranscriptViewModel] Session started with Apple Speech Recognition")
+        print("[TranscriptViewModel] Recording started")
+    }
+    
+    private func shouldChainToExistingSession(currentTime: Date) -> Bool {
+        // Chain if:
+        // 1. We have a session start time
+        // 2. We're within the 1-hour window
+        // 3. We have some existing content (transcript or analysis)
+        guard let startTime = sessionStartTime else { return false }
+        let elapsed = currentTime.timeIntervalSince(startTime)
+        let hasExistingContent = !liveTranscript.isEmpty || analysis != nil
+        return elapsed < sessionChainWindowSeconds && hasExistingContent
     }
     
     func endSession() async {
@@ -91,7 +134,7 @@ final class TranscriptViewModel: ObservableObject {
         let transcript = liveTranscript
         
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        print("FINAL TRANSCRIPT: \(transcript)")
+        print("TRANSCRIPT (\(transcript.count) chars)")
         print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         
         isSessionActive = false
@@ -100,27 +143,29 @@ final class TranscriptViewModel: ObservableObject {
         if transcript.isEmpty {
             errorMessage = "No speech detected. Try speaking closer to the microphone."
         } else {
-            currentSession = RecordingSession(
-                transcript: transcript,
-                durationSeconds: elapsedSeconds
-            )
+            // Update or create session
+            if currentSession != nil {
+                currentSession?.transcript = transcript
+                currentSession?.durationSeconds = elapsedSeconds
+            } else {
+                currentSession = RecordingSession(
+                    transcript: transcript,
+                    durationSeconds: elapsedSeconds
+                )
+            }
         }
         
-        print("[TranscriptViewModel] Session ended - transcript ready for analysis")
+        print("[TranscriptViewModel] Recording stopped - ready for analysis or more recording")
     }
     
     func cancelSession() {
         stopDurationTimer()
         sttService.stopTranscription()
-        liveTranscript = ""
         isSessionActive = false
-        elapsedSeconds = 0
-        analysis = nil
-        hasTranscriptToAnalyze = false
-        currentSession = nil
-        conversationHistory = []
+        // Don't clear transcript - user might want to resume
     }
     
+    /// Completely discard current session and start fresh
     func discardRecording() {
         liveTranscript = ""
         analysis = nil
@@ -129,10 +174,19 @@ final class TranscriptViewModel: ObservableObject {
         conversationHistory = []
         errorMessage = nil
         elapsedSeconds = 0
+        sessionStartTime = nil // Reset the chain window
     }
     
+    /// Start a new recording - checks if we should chain or start fresh
     func startNewRecording() {
-        discardRecording()
+        // This is called from "New Recording" button
+        // Check if within chain window - if so, just ready the mic
+        // If outside window, clear everything
+        let now = Date()
+        if !shouldChainToExistingSession(currentTime: now) {
+            discardRecording()
+        }
+        // Either way, user can now tap mic to record
     }
     
     // MARK: - Timer
@@ -173,6 +227,7 @@ final class TranscriptViewModel: ObservableObject {
             currentSession?.aiExplanation = result.explanation
             currentSession?.keyPoints = result.summaryPoints
             currentSession?.followUpQuestions = result.followUpQuestions
+            currentSession?.analysis = result
             
             if let session = currentSession {
                 sessionStore.saveSession(session)
@@ -233,6 +288,7 @@ final class TranscriptViewModel: ObservableObject {
         elapsedSeconds = session.durationSeconds
         currentSession = session
         conversationHistory = session.conversationHistory
+        sessionStartTime = session.startTime // Restore chain window
         
         if let explanation = session.aiExplanation {
             analysis = RoundsAnalysis(
@@ -256,5 +312,11 @@ final class TranscriptViewModel: ObservableObject {
         let minutes = elapsedSeconds / 60
         let seconds = elapsedSeconds % 60
         return String(format: "%02d:%02d", minutes, seconds)
+    }
+    
+    /// Whether we're in an active session chain (can append more recordings)
+    var isInSessionChain: Bool {
+        guard let startTime = sessionStartTime else { return false }
+        return Date().timeIntervalSince(startTime) < sessionChainWindowSeconds
     }
 }

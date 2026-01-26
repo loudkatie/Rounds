@@ -24,7 +24,7 @@ struct SplashView: View {
                         .fill(.white)
                         .frame(width: 100, height: 100)
                     
-                    // Heart with cross
+                    // Heart with cross - matches app icon
                     ZStack {
                         Image(systemName: "heart.fill")
                             .font(.system(size: 44, weight: .regular))
@@ -42,8 +42,8 @@ struct SplashView: View {
                     .font(.system(size: 38, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
 
-                // Tagline
-                Text("I'm here when you're ready.")
+                // Simple, descriptive tagline
+                Text("Your medical AI assistant")
                     .font(.system(size: 17, weight: .medium))
                     .foregroundColor(.white.opacity(0.9))
             }

@@ -2,7 +2,7 @@
 //  LandingView.swift
 //  Rounds AI
 //
-//  Main recording screen with full analysis and follow-up conversation
+//  Main recording screen with session chaining, auto-scroll, and improved sharing
 //
 
 import SwiftUI
@@ -37,13 +37,17 @@ struct LandingView: View {
     @State private var showFullTranscript = false
     @FocusState private var isFollowUpFocused: Bool
 
+    // Colors for button states
+    private let readyGreen = Color(red: 52/255, green: 199/255, blue: 89/255) // iOS green
+    private let recordingRed = Color.red
+
     var body: some View {
         VStack(spacing: 0) {
             ScrollViewReader { scrollProxy in
                 ScrollView {
                     VStack(spacing: 0) {
                         
-                        // MARK: - Header (Heart+Cross + ROUNDS AI wordmark)
+                        // MARK: - Header
                         VStack(spacing: 8) {
                             HeartPlusIcon(size: 36)
                             
@@ -67,9 +71,9 @@ struct LandingView: View {
                         } label: {
                             ZStack {
                                 Circle()
-                                    .fill(viewModel.isSessionActive ? Color.red : RoundsColor.brandBlue)
+                                    .fill(buttonColor)
                                     .frame(width: 120, height: 120)
-                                    .shadow(color: (viewModel.isSessionActive ? Color.red : RoundsColor.brandBlue).opacity(0.3), radius: 12, y: 6)
+                                    .shadow(color: buttonColor.opacity(0.3), radius: 12, y: 6)
 
                                 if viewModel.isSessionActive {
                                     // Stop icon (white square on red)
@@ -85,25 +89,27 @@ struct LandingView: View {
                             }
                         }
                         .buttonStyle(.plain)
-                        // Subtle pulse animation when recording
-                        .scaleEffect(viewModel.isSessionActive ? 1.02 : 1.0)
-                        .animation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true), value: viewModel.isSessionActive)
 
-                        // Duration when recording
+                        // Duration or status text
                         if viewModel.isSessionActive {
                             Text(viewModel.formattedDuration)
                                 .font(.system(size: 24, weight: .medium, design: .monospaced))
-                                .foregroundColor(.red)
+                                .foregroundColor(recordingRed)
                                 .padding(.top, 16)
+                        } else if viewModel.isInSessionChain && !viewModel.liveTranscript.isEmpty {
+                            Text("Tap to continue recording")
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                                .padding(.top, 12)
                         }
 
                         Spacer().frame(height: 32)
 
-                        // MARK: - Live Transcription Box
+                        // MARK: - Live Transcription Box with Auto-Scroll
                         VStack(alignment: .leading, spacing: 0) {
                             ZStack(alignment: .topLeading) {
                                 RoundedRectangle(cornerRadius: 12)
-                                    .fill(viewModel.isSessionActive ? Color.red.opacity(0.08) : RoundsColor.brandBlue.opacity(0.08))
+                                    .fill(viewModel.isSessionActive ? recordingRed.opacity(0.08) : RoundsColor.brandBlue.opacity(0.08))
                                     .frame(height: 140)
                                 
                                 if viewModel.liveTranscript.isEmpty {
@@ -112,14 +118,23 @@ struct LandingView: View {
                                         .foregroundColor(.gray)
                                         .padding(16)
                                 } else {
-                                    ScrollView {
-                                        Text(viewModel.liveTranscript)
-                                            .font(.body)
-                                            .foregroundColor(.black)
-                                            .frame(maxWidth: .infinity, alignment: .leading)
-                                            .padding(16)
+                                    ScrollViewReader { transcriptScroll in
+                                        ScrollView {
+                                            Text(viewModel.liveTranscript)
+                                                .font(.body)
+                                                .foregroundColor(.black)
+                                                .frame(maxWidth: .infinity, alignment: .leading)
+                                                .padding(16)
+                                                .id("transcriptEnd")
+                                        }
+                                        .frame(height: 140)
+                                        .onChange(of: viewModel.liveTranscript) { _, _ in
+                                            // Auto-scroll to bottom as new text comes in
+                                            withAnimation(.easeOut(duration: 0.2)) {
+                                                transcriptScroll.scrollTo("transcriptEnd", anchor: .bottom)
+                                            }
+                                        }
                                     }
-                                    .frame(height: 140)
                                 }
                             }
                         }
@@ -127,11 +142,11 @@ struct LandingView: View {
 
                         Spacer().frame(height: 24)
 
-                        // MARK: - Ready Pill (when idle)
+                        // MARK: - Ready Pill
                         if !viewModel.isSessionActive && viewModel.analysis == nil && viewModel.liveTranscript.isEmpty {
                             HStack(spacing: 8) {
                                 Circle()
-                                    .fill(Color.green)
+                                    .fill(readyGreen)
                                     .frame(width: 10, height: 10)
                                 
                                 Text("Ready")
@@ -145,7 +160,7 @@ struct LandingView: View {
                             .cornerRadius(20)
                         }
 
-                        // MARK: - Post-Recording Actions (before analysis)
+                        // MARK: - Post-Recording Actions
                         if !viewModel.isSessionActive && !viewModel.liveTranscript.isEmpty && viewModel.analysis == nil {
                             VStack(spacing: 16) {
                                 Button {
@@ -202,6 +217,11 @@ struct LandingView: View {
 
                         // MARK: - Analysis Results
                         if let analysis = viewModel.analysis {
+                            // Share button at TOP of results
+                            ShareButtonsSection(showShareSheet: $showShareSheet, isCompact: true)
+                                .padding(.top, 24)
+                                .padding(.horizontal, 24)
+                            
                             AnalysisResultsSection(
                                 analysis: analysis,
                                 transcript: viewModel.liveTranscript,
@@ -210,7 +230,7 @@ struct LandingView: View {
                                 patientName: profileStore.patientName,
                                 sessionDate: viewModel.currentSession?.startTime ?? Date()
                             )
-                            .padding(.top, 24)
+                            .padding(.top, 16)
                             .padding(.horizontal, 24)
 
                             // MARK: - Follow-up Conversation Thread
@@ -249,7 +269,6 @@ struct LandingView: View {
                                     .disabled(followUpText.isEmpty || viewModel.isAnalyzing)
                                 }
                                 
-                                // Loading indicator for follow-up
                                 if viewModel.isAnalyzing && !viewModel.conversationHistory.isEmpty {
                                     HStack {
                                         ProgressView()
@@ -265,36 +284,43 @@ struct LandingView: View {
                             .padding(.horizontal, 24)
                             .id("followUpInput")
 
-                            // MARK: - Share Buttons
+                            // MARK: - Bottom Share & Actions
                             VStack(spacing: 12) {
-                                Button {
-                                    showShareSheet = true
-                                } label: {
-                                    HStack(spacing: 8) {
-                                        Image(systemName: "square.and.arrow.up")
-                                            .font(.system(size: 14))
-                                        Text("Share AI Summary")
-                                            .font(.subheadline)
-                                            .fontWeight(.medium)
+                                ShareButtonsSection(showShareSheet: $showShareSheet, isCompact: false)
+                                
+                                // Continue Recording button (if within chain window)
+                                if viewModel.isInSessionChain {
+                                    Button {
+                                        Task {
+                                            await viewModel.startSession()
+                                        }
+                                    } label: {
+                                        HStack(spacing: 8) {
+                                            Image(systemName: "mic.badge.plus")
+                                                .font(.system(size: 14))
+                                            Text("Continue Recording")
+                                                .font(.subheadline)
+                                                .fontWeight(.medium)
+                                        }
+                                        .foregroundColor(readyGreen)
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 14)
+                                        .background(readyGreen.opacity(0.1))
+                                        .cornerRadius(12)
                                     }
-                                    .foregroundColor(.white)
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 14)
-                                    .background(RoundsColor.brandBlue)
-                                    .cornerRadius(12)
                                 }
 
                                 Button {
-                                    viewModel.startNewRecording()
+                                    viewModel.discardRecording()
                                 } label: {
                                     HStack(spacing: 8) {
-                                        Image(systemName: "mic.badge.plus")
+                                        Image(systemName: "xmark.circle")
                                             .font(.system(size: 14))
-                                        Text("New Recording")
+                                        Text("Start Fresh Session")
                                             .font(.subheadline)
                                             .fontWeight(.medium)
                                     }
-                                    .foregroundColor(RoundsColor.brandBlue)
+                                    .foregroundColor(.gray)
                                     .frame(maxWidth: .infinity)
                                     .padding(.vertical, 14)
                                     .background(Color(UIColor.systemGray6))
@@ -312,12 +338,11 @@ struct LandingView: View {
                 .scrollDismissesKeyboard(.interactively)
             }
             
-            // MARK: - Footer (anchored)
+            // MARK: - Footer
             FooterBar(showPreviousRounds: $showPreviousRounds, hasHistory: !sessionStore.sessions.isEmpty)
         }
         .background(Color.white.ignoresSafeArea())
         .onTapGesture {
-            // Dismiss keyboard when tapping outside
             isFollowUpFocused = false
         }
         .sheet(isPresented: $showPreviousRounds) {
@@ -335,17 +360,26 @@ struct LandingView: View {
         }
     }
     
+    // MARK: - Computed Properties
+    
+    private var buttonColor: Color {
+        if viewModel.isSessionActive {
+            return recordingRed
+        } else {
+            return readyGreen
+        }
+    }
+    
     // MARK: - Helper Functions
     
     private func sendFollowUp(scrollProxy: ScrollViewProxy) {
         guard !followUpText.isEmpty && !viewModel.isAnalyzing else { return }
         let question = followUpText
         followUpText = ""
-        isFollowUpFocused = false // Dismiss keyboard
+        isFollowUpFocused = false
         
         Task {
             await viewModel.askFollowUp(question)
-            // Scroll to show new message
             withAnimation {
                 scrollProxy.scrollTo("followUpInput", anchor: .bottom)
             }
@@ -353,62 +387,121 @@ struct LandingView: View {
     }
     
     private func formatTranscriptWithParagraphs(_ text: String) -> String {
-        // Add paragraph breaks after sentences ending with periods followed by capital letters
         var result = text
-        
-        // Break on sentence endings (. followed by space and capital letter)
         let pattern = /\. ([A-Z])/
         result = result.replacing(pattern) { match in
             ".\n\n\(match.1)"
         }
-        
-        // Also break on common transition phrases
-        let transitions = ["So ", "Now ", "We're ", "The ", "I'd ", "Any "]
+        let transitions = ["So ", "Now ", "We're ", "The ", "I'd ", "Any ", "From ", "On ", "For ", "Starting "]
         for transition in transitions {
             result = result.replacingOccurrences(of: ". \(transition)", with: ".\n\n\(transition)")
         }
-        
         return result
     }
     
     private func formatShareText() -> String {
+        let caregiverName = profileStore.caregiverName
+        let patientName = profileStore.patientName
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "EEEE, MMM d"
         let dateString = dateFormatter.string(from: viewModel.currentSession?.startTime ?? Date())
         
-        var text = "━━━━━━━━━━━━━━━━━━\n"
-        text += "📋 \(profileStore.patientName)'s Rounds\n"
+        var text = "🩺 \(patientName)'s Rounds\n"
         text += "📅 \(dateString)\n"
-        text += "━━━━━━━━━━━━━━━━━━\n\n"
+        text += "━━━━━━━━━━━━━━━━━━━━━━\n\n"
         
         if let analysis = viewModel.analysis {
             // Key Points
             if !analysis.summaryPoints.isEmpty {
                 text += "📌 KEY POINTS\n\n"
-                for point in analysis.summaryPoints.prefix(3) {
+                for point in analysis.summaryPoints.prefix(4) {
                     text += "• \(point)\n\n"
                 }
             }
             
-            // Summary
+            // Summary with paragraph breaks
             if !analysis.explanation.isEmpty {
                 text += "💬 SUMMARY\n\n"
-                text += "\(analysis.explanation)\n\n"
+                let paragraphs = formatExplanationForShare(analysis.explanation)
+                text += "\(paragraphs)\n\n"
             }
             
             // Suggested Questions
             if !analysis.followUpQuestions.isEmpty {
-                text += "❓ QUESTIONS TO ASK\n\n"
+                text += "❓ QUESTIONS TO CONSIDER\n\n"
                 for (index, question) in analysis.followUpQuestions.prefix(3).enumerated() {
                     text += "\(index + 1). \(question)\n\n"
                 }
             }
+            
+            // Include conversation if any
+            if !viewModel.conversationHistory.isEmpty {
+                text += "💭 FOLLOW-UP Q&A\n\n"
+                for message in viewModel.conversationHistory {
+                    if message.isUser {
+                        text += "Q: \(message.content)\n\n"
+                    } else {
+                        text += "A: \(message.content)\n\n"
+                    }
+                }
+            }
         }
         
-        text += "━━━━━━━━━━━━━━━━━━\n"
-        text += "Sent via Rounds AI 💙\n"
+        text += "━━━━━━━━━━━━━━━━━━━━━━\n"
+        text += "Sent by \(caregiverName) via Rounds AI 💙"
         
         return text
+    }
+    
+    private func formatExplanationForShare(_ explanation: String) -> String {
+        // Break into paragraphs every 2-3 sentences
+        var result = ""
+        var sentenceCount = 0
+        var currentParagraph = ""
+        
+        let sentences = explanation.components(separatedBy: ". ")
+        for sentence in sentences {
+            currentParagraph += sentence + ". "
+            sentenceCount += 1
+            
+            if sentenceCount >= 2 {
+                result += currentParagraph.trimmingCharacters(in: .whitespaces) + "\n\n"
+                currentParagraph = ""
+                sentenceCount = 0
+            }
+        }
+        
+        if !currentParagraph.isEmpty {
+            result += currentParagraph.trimmingCharacters(in: .whitespaces)
+        }
+        
+        return result.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+}
+
+// MARK: - Share Buttons Section
+
+private struct ShareButtonsSection: View {
+    @Binding var showShareSheet: Bool
+    let isCompact: Bool
+    
+    var body: some View {
+        Button {
+            showShareSheet = true
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "square.and.arrow.up")
+                    .font(.system(size: 14))
+                Text(isCompact ? "Share" : "Share Full Summary")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+            }
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, isCompact ? 12 : 14)
+            .background(RoundsColor.brandBlue)
+            .cornerRadius(12)
+        }
     }
 }
 
@@ -419,29 +512,37 @@ private struct ConversationThreadView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Follow-up Conversation")
+            Text("Follow-up Q&A")
                 .font(.subheadline)
                 .fontWeight(.semibold)
                 .foregroundColor(.gray)
             
             ForEach(Array(messages.enumerated()), id: \.offset) { _, message in
-                HStack {
-                    if message.isUser { Spacer(minLength: 60) }
+                VStack(alignment: message.isUser ? .trailing : .leading, spacing: 4) {
+                    Text(message.isUser ? "You asked:" : "Rounds AI:")
+                        .font(.caption)
+                        .foregroundColor(.gray)
                     
-                    Text(message.content)
+                    Text(formatMessageContent(message.content))
                         .font(.body)
                         .padding(12)
                         .background(message.isUser ? RoundsColor.brandBlue : Color(UIColor.systemGray5))
                         .foregroundColor(message.isUser ? .white : .black)
                         .cornerRadius(16)
-                    
-                    if !message.isUser { Spacer(minLength: 60) }
                 }
+                .frame(maxWidth: .infinity, alignment: message.isUser ? .trailing : .leading)
             }
         }
         .padding(16)
         .background(Color(UIColor.systemGray6))
         .cornerRadius(12)
+    }
+    
+    private func formatMessageContent(_ content: String) -> String {
+        // Clean up markdown formatting for display
+        var result = content
+        result = result.replacingOccurrences(of: "**", with: "")
+        return result
     }
 }
 
@@ -467,7 +568,6 @@ private struct AnalysisResultsSection: View {
             // Date header
             HStack {
                 HeartPlusIcon(size: 20)
-                
                 Text("Recap from \(dayOfWeek)")
                     .font(.headline)
                     .fontWeight(.semibold)
@@ -493,14 +593,14 @@ private struct AnalysisResultsSection: View {
                 .cornerRadius(12)
             }
 
-            // Key Points (max 3)
+            // Key Points
             if !analysis.summaryPoints.isEmpty {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("\(dayOfWeek)'s Key Points")
                         .font(.subheadline)
                         .fontWeight(.semibold)
 
-                    ForEach(Array(analysis.summaryPoints.prefix(3).enumerated()), id: \.offset) { _, point in
+                    ForEach(Array(analysis.summaryPoints.prefix(4).enumerated()), id: \.offset) { _, point in
                         HStack(alignment: .top, spacing: 10) {
                             Circle()
                                 .fill(RoundsColor.brandBlue)
@@ -518,16 +618,20 @@ private struct AnalysisResultsSection: View {
                 .cornerRadius(12)
             }
 
-            // Discussion Summary - only show if we have content
+            // Discussion Summary - WITH PARAGRAPH BREAKS
             if !analysis.explanation.isEmpty {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 12) {
                     Text("\(dayOfWeek) Discussion")
                         .font(.subheadline)
                         .fontWeight(.semibold)
 
-                    Text(analysis.explanation)
-                        .font(.body)
-                        .lineSpacing(4)
+                    // Break into paragraphs for readability
+                    let paragraphs = breakIntoParagraphs(analysis.explanation)
+                    ForEach(Array(paragraphs.enumerated()), id: \.offset) { _, paragraph in
+                        Text(paragraph)
+                            .font(.body)
+                            .lineSpacing(4)
+                    }
                 }
                 .padding(16)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -566,6 +670,37 @@ private struct AnalysisResultsSection: View {
             }
         }
     }
+    
+    private func breakIntoParagraphs(_ text: String) -> [String] {
+        // Break every 2-3 sentences for readability
+        var paragraphs: [String] = []
+        var currentParagraph = ""
+        var sentenceCount = 0
+        
+        let sentences = text.components(separatedBy: ". ")
+        for sentence in sentences {
+            let trimmed = sentence.trimmingCharacters(in: .whitespaces)
+            if trimmed.isEmpty { continue }
+            
+            currentParagraph += trimmed + ". "
+            sentenceCount += 1
+            
+            if sentenceCount >= 2 {
+                paragraphs.append(currentParagraph.trimmingCharacters(in: .whitespaces))
+                currentParagraph = ""
+                sentenceCount = 0
+            }
+        }
+        
+        if !currentParagraph.isEmpty {
+            let final = currentParagraph.trimmingCharacters(in: .whitespaces)
+            if !final.isEmpty && final != "." {
+                paragraphs.append(final)
+            }
+        }
+        
+        return paragraphs.isEmpty ? [text] : paragraphs
+    }
 }
 
 // MARK: - Full Transcript Sheet
@@ -583,7 +718,7 @@ private struct FullTranscriptSheet: View {
     }
     
     private var shareText: String {
-        "📋 \(patientName)'s Appointment\n📅 \(formattedDate)\n\n━━━━━━━━━━━━━━━━━━\n\n\(transcript)\n\n━━━━━━━━━━━━━━━━━━\nSent via Rounds AI 💙"
+        "🩺 \(patientName)'s Appointment\n📅 \(formattedDate)\n━━━━━━━━━━━━━━━━━━━━━━\n\n\(transcript)\n\n━━━━━━━━━━━━━━━━━━━━━━\nSent via Rounds AI 💙"
     }
     
     var body: some View {
