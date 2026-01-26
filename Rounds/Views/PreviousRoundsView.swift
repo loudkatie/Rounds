@@ -37,7 +37,7 @@ struct PreviousRoundsView: View {
                     Button("Done") {
                         dismiss()
                     }
-                    .foregroundColor(RoundsColor.bluePrimary)
+                    .foregroundColor(RoundsColor.brandBlue)
                 }
             }
         }
@@ -51,18 +51,18 @@ private struct EmptyStateView: View {
         VStack(spacing: 16) {
             Image(systemName: "waveform.circle")
                 .font(.system(size: 60, weight: .light))
-                .foregroundColor(RoundsColor.textSecondary)
+                .foregroundColor(.gray)
 
             Text("No recordings yet")
                 .font(.headline)
-                .foregroundColor(RoundsColor.textPrimary)
+                .foregroundColor(.primary)
 
             Text("Your saved sessions will appear here")
                 .font(.subheadline)
-                .foregroundColor(RoundsColor.textSecondary)
+                .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(RoundsColor.background)
+        .background(Color(UIColor.systemBackground))
     }
 }
 
@@ -81,13 +81,13 @@ private struct SessionListView: View {
                     .onTapGesture {
                         onSelect(session)
                     }
-                    .listRowBackground(RoundsColor.card)
+                    .listRowBackground(Color(UIColor.secondarySystemGroupedBackground))
             }
             .onDelete(perform: onDelete)
         }
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
-        .background(RoundsColor.background)
+        .background(Color(UIColor.systemGroupedBackground))
     }
 }
 
@@ -101,31 +101,31 @@ private struct SessionRowView: View {
             HStack {
                 Text(session.formattedDate)
                     .font(.headline)
-                    .foregroundColor(RoundsColor.textPrimary)
+                    .foregroundColor(.primary)
 
                 Spacer()
 
                 Text(session.formattedDuration)
                     .font(.subheadline)
-                    .foregroundColor(RoundsColor.textSecondary)
+                    .foregroundColor(.secondary)
             }
 
             Text(session.transcript.prefix(100) + (session.transcript.count > 100 ? "..." : ""))
                 .font(.subheadline)
-                .foregroundColor(RoundsColor.textSecondary)
+                .foregroundColor(.secondary)
                 .lineLimit(2)
 
             HStack(spacing: 12) {
                 if session.aiExplanation != nil {
                     Label("Analyzed", systemImage: "sparkles")
                         .font(.caption)
-                        .foregroundColor(RoundsColor.bluePrimary)
+                        .foregroundColor(RoundsColor.brandBlue)
                 }
 
                 if !session.conversationHistory.isEmpty {
                     Label("\(session.conversationHistory.count / 2) follow-ups", systemImage: "bubble.left.and.bubble.right")
                         .font(.caption)
-                        .foregroundColor(RoundsColor.textSecondary)
+                        .foregroundColor(.secondary)
                 }
             }
         }
