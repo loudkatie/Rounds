@@ -190,7 +190,7 @@ Your tone: Warm, calm, competent. Like a friend who happens to know medicine.
 ## API Key (for tomorrow)
 
 ```
-OPENAI_API_KEY=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
+OPENAI_API_KEY=YOUR_API_KEY_HERE
 ```
 
 **Budget:** $35.63  
