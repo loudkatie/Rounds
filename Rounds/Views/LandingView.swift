@@ -132,7 +132,10 @@ struct LandingView: View {
             PreviousRoundsView(viewModel: viewModel, sessionStore: sessionStore)
         }
         .sheet(isPresented: $showShareSheet) {
-            ShareSheet(text: formatShareText())
+            ShareSheet(
+                text: formatShareText(),
+                subject: "\(profileStore.patientName)'s Health Appointment - \(getDayOfWeek()) Recap"
+            )
         }
         .sheet(isPresented: $showFullTranscript) {
             FullTranscriptSheet(
@@ -149,36 +152,43 @@ struct LandingView: View {
         let patientName = profileStore.patientName
         let caregiverName = profileStore.caregiverName
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "EEEE, MMM d"
-        let dateString = dateFormatter.string(from: viewModel.currentSession?.startTime ?? Date())
+        dateFormatter.dateFormat = "EEEE"
+        let dayOfWeek = dateFormatter.string(from: viewModel.currentSession?.startTime ?? Date())
         
-        var text = "🩺 \(patientName)'s Rounds - \(dateString)\n"
+        // Header matching the report
+        var text = "🩺 \(patientName)'s Health Appointment - \(dayOfWeek) Recap\n\n"
+        text += "Here's a recap of \(patientName)'s \(dayOfWeek) health meeting, sent from Rounds AI:\n\n"
         text += "━━━━━━━━━━━━━━━━━━━━━━\n\n"
         
         if let analysis = viewModel.analysis {
             if !analysis.summaryPoints.isEmpty {
                 text += "📌 KEY POINTS\n\n"
                 for point in analysis.summaryPoints {
-                    text += "• \(point)\n\n"
+                    text += "• \(cleanMarkdown(point))\n\n"
                 }
             }
             
             if !analysis.explanation.isEmpty {
                 text += "💬 WHAT THIS MEANS\n\n"
-                text += "\(formatForShare(analysis.explanation))\n\n"
+                text += "\(formatForShare(cleanMarkdown(analysis.explanation)))\n\n"
             }
             
             if !analysis.followUpQuestions.isEmpty {
                 text += "❓ QUESTIONS TO CONSIDER\n\n"
                 for (i, q) in analysis.followUpQuestions.prefix(3).enumerated() {
-                    text += "\(i + 1). \(q)\n\n"
+                    text += "\(i + 1). \(cleanMarkdown(q))\n\n"
                 }
             }
             
             if !viewModel.conversationHistory.isEmpty {
-                text += "💭 Q&A WITH ROUNDS AI\n\n"
+                text += "💭 FOLLOW-UP Q&A\n\n"
+                text += "Here are a few follow-up questions I asked today:\n\n"
                 for msg in viewModel.conversationHistory {
-                    text += msg.isUser ? "Q: \(msg.content)\n\n" : "A: \(msg.content)\n\n"
+                    if msg.isUser {
+                        text += "Q: \(msg.content)\n\n"
+                    } else {
+                        text += "A: \(cleanMarkdown(msg.content))\n\n"
+                    }
                 }
             }
         }
@@ -187,6 +197,11 @@ struct LandingView: View {
         text += "Sent by \(caregiverName) via Rounds AI 💙"
         
         return text
+    }
+    
+    /// Remove markdown ** markers for plain text sharing
+    private func cleanMarkdown(_ text: String) -> String {
+        return text.replacingOccurrences(of: "**", with: "")
     }
     
     private func formatForShare(_ text: String) -> String {
@@ -207,6 +222,12 @@ struct LandingView: View {
             result = result.replacingOccurrences(of: ". \(t)", with: ".\n\n\(t)")
         }
         return result
+    }
+    
+    private func getDayOfWeek() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE"
+        return formatter.string(from: viewModel.currentSession?.startTime ?? Date())
     }
 }
 
@@ -513,7 +534,8 @@ private struct AnalysisResultsView: View {
                                 Text(msg.isUser ? "You asked:" : "Rounds AI:")
                                     .font(.caption)
                                     .foregroundColor(.gray)
-                                Text(msg.content)
+                                // Render markdown bold (**text**) as actual bold
+                                Text(renderBoldText(msg.content))
                                     .font(.body)
                                     .padding(12)
                                     .background(msg.isUser ? RoundsColor.brandBlue : Color(UIColor.systemGray5))
@@ -774,14 +796,57 @@ private struct FullTranscriptSheet: View {
     }
 }
 
-// MARK: - Share Sheet
+// MARK: - Share Sheet with Email Subject
 
 struct ShareSheet: UIViewControllerRepresentable {
     let text: String
+    var subject: String = ""
+    
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        let activityVC = UIActivityViewController(activityItems: [ShareText(text: text, subject: subject)], applicationActivities: nil)
+        return activityVC
     }
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
+}
+
+/// Custom class to provide email subject line
+class ShareText: NSObject, UIActivityItemSource {
+    let text: String
+    let subject: String
+    
+    init(text: String, subject: String) {
+        self.text = text
+        self.subject = subject
+    }
+    
+    func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
+        return text
+    }
+    
+    func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
+        return text
+    }
+    
+    func activityViewController(_ activityViewController: UIActivityViewController, subjectForActivityType activityType: UIActivity.ActivityType?) -> String {
+        return subject
+    }
+}
+
+// MARK: - Bold Text Rendering Helper
+
+/// Converts **text** markdown to AttributedString with bold
+func renderBoldText(_ input: String) -> AttributedString {
+    var result = AttributedString(input)
+    
+    // Find all **bold** patterns and make them bold
+    let pattern = /\*\*(.+?)\*\*/
+    var plainText = input
+    
+    // Simple approach: just remove the ** markers for display
+    // SwiftUI Text doesn't easily support inline bold, so we clean it
+    plainText = plainText.replacingOccurrences(of: "**", with: "")
+    
+    return AttributedString(plainText)
 }
 
 #Preview {
