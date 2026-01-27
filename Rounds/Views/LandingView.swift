@@ -16,6 +16,7 @@ struct LandingView: View {
     @State private var showPreviousRounds = false
     @State private var showShareSheet = false
     @State private var showFullTranscript = false
+    @State private var showAccount = false
     @FocusState private var isFollowUpFocused: Bool
 
     var body: some View {
@@ -45,13 +46,18 @@ struct LandingView: View {
             // Footer
             FooterBar(
                 showPreviousRounds: $showPreviousRounds,
-                hasHistory: !sessionStore.sessions.isEmpty
+                showAccount: $showAccount,
+                hasHistory: !sessionStore.sessions.isEmpty,
+                hasActiveSession: !viewModel.liveTranscript.isEmpty
             )
         }
         .background(Color.white)
         .onTapGesture { isFollowUpFocused = false }
         .sheet(isPresented: $showPreviousRounds) {
             PreviousRoundsView(viewModel: viewModel, sessionStore: sessionStore)
+        }
+        .sheet(isPresented: $showAccount) {
+            AccountSheet(profileStore: profileStore)
         }
         .sheet(isPresented: $showShareSheet) {
             ShareSheet(text: formatShareText(), subject: shareSubject())
@@ -109,13 +115,19 @@ private struct RecordingView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Header
+            // Header with two hearts icon + ROUNDS AI wordmark
             VStack(spacing: 8) {
                 RoundsHeartIcon(size: 36)
-                Text("R O U N D S")
-                    .font(.system(size: 28, weight: .bold))
-                    .tracking(8)
-                    .foregroundColor(RoundsColor.textDark)
+                VStack(spacing: 2) {
+                    Text("R O U N D S")
+                        .font(.system(size: 26, weight: .bold))
+                        .tracking(6)
+                        .foregroundColor(RoundsColor.textDark)
+                    Text("A I")
+                        .font(.system(size: 18, weight: .bold))
+                        .tracking(8)
+                        .foregroundColor(RoundsColor.buttonBlue)
+                }
             }
             .padding(.top, 50)
             .padding(.bottom, 30)
@@ -343,10 +355,10 @@ private struct ResultsView: View {
                 .padding(.horizontal, 24)
             }
 
-            // WHAT WE DISCUSSED
+            // WHAT WE DISCUSSED - with paragraph breaks
             if let a = viewModel.analysis, !a.explanation.isEmpty {
                 ModuleCard(title: "💬 What We Discussed") {
-                    Text(a.explanation.replacingOccurrences(of: "**", with: ""))
+                    Text(formatIntoParagraphs(a.explanation.replacingOccurrences(of: "**", with: "")))
                         .font(.body)
                         .foregroundColor(RoundsColor.textDark)
                         .lineSpacing(6)
@@ -530,39 +542,60 @@ private struct ActionButton: View {
 
 private struct FooterBar: View {
     @Binding var showPreviousRounds: Bool
+    @Binding var showAccount: Bool
     let hasHistory: Bool
+    let hasActiveSession: Bool
 
     var body: some View {
         VStack(spacing: 0) {
             Divider()
-            HStack {
+            HStack(spacing: 0) {
+                // Archive / Past Sessions
                 if hasHistory {
                     Button { showPreviousRounds = true } label: {
                         VStack(spacing: 4) {
-                            Image(systemName: "archivebox")
-                            Text("Archive")
+                            Image(systemName: "clock.arrow.circlepath")
+                            Text("Past Sessions")
                         }
                         .font(.caption2)
                         .foregroundColor(.gray)
                     }
+                    .frame(maxWidth: .infinity)
                 }
-                Spacer()
-                VStack(spacing: 4) {
-                    Image(systemName: "person.crop.circle.badge.plus")
-                    Text("Add Info")
+                
+                // Active Session indicator (when recording exists)
+                if hasActiveSession {
+                    VStack(spacing: 4) {
+                        Image(systemName: "waveform.circle.fill")
+                        Text("Active")
+                    }
+                    .font(.caption2)
+                    .foregroundColor(RoundsColor.buttonBlue)
+                    .frame(maxWidth: .infinity)
                 }
-                .font(.caption2)
-                .foregroundColor(RoundsColor.buttonBlue)
-                Spacer()
+                
+                // Account
+                Button { showAccount = true } label: {
+                    VStack(spacing: 4) {
+                        Image(systemName: "person.circle")
+                        Text("Account")
+                    }
+                    .font(.caption2)
+                    .foregroundColor(.gray)
+                }
+                .frame(maxWidth: .infinity)
+                
+                // Powered by LOUD
                 Link(destination: URL(string: "https://loudlabs.xyz")!) {
                     VStack(spacing: 2) {
+                        Text("powered by").font(.system(size: 8))
                         Text("LOUD").font(.system(size: 11, weight: .black))
-                        Text("powered by").font(.system(size: 9))
                     }
                     .foregroundColor(.gray)
                 }
+                .frame(maxWidth: .infinity)
             }
-            .padding(.horizontal, 32)
+            .padding(.horizontal, 16)
             .padding(.vertical, 12)
         }
     }
@@ -614,6 +647,85 @@ class ShareItem: NSObject, UIActivityItemSource {
     func activityViewControllerPlaceholderItem(_ c: UIActivityViewController) -> Any { text }
     func activityViewController(_ c: UIActivityViewController, itemForActivityType t: UIActivity.ActivityType?) -> Any? { text }
     func activityViewController(_ c: UIActivityViewController, subjectForActivityType t: UIActivity.ActivityType?) -> String { subject }
+}
+
+// MARK: - Account Sheet
+
+private struct AccountSheet: View {
+    @ObservedObject var profileStore: ProfileStore
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationView {
+            List {
+                Section("Profile") {
+                    HStack {
+                        Text("Your Name")
+                        Spacer()
+                        Text(profileStore.caregiverName)
+                            .foregroundColor(.gray)
+                    }
+                    HStack {
+                        Text("Patient")
+                        Spacer()
+                        Text(profileStore.patientName)
+                            .foregroundColor(.gray)
+                    }
+                }
+                
+                Section("App") {
+                    HStack {
+                        Text("Version")
+                        Spacer()
+                        Text("1.0.0")
+                            .foregroundColor(.gray)
+                    }
+                }
+                
+                Section {
+                    Button("Reset Onboarding") {
+                        profileStore.resetProfile()
+                        dismiss()
+                    }
+                    .foregroundColor(.red)
+                }
+            }
+            .navigationTitle("Account")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Helper: Format text into paragraphs
+
+private func formatIntoParagraphs(_ text: String) -> String {
+    // Split into sentences and group into paragraphs (2-3 sentences each)
+    let sentences = text.components(separatedBy: ". ")
+    var result = ""
+    var count = 0
+    
+    for sentence in sentences {
+        let trimmed = sentence.trimmingCharacters(in: .whitespaces)
+        if trimmed.isEmpty { continue }
+        
+        result += trimmed
+        if !trimmed.hasSuffix(".") { result += "." }
+        result += " "
+        count += 1
+        
+        // Add paragraph break every 2-3 sentences
+        if count >= 2 {
+            result += "\n\n"
+            count = 0
+        }
+    }
+    
+    return result.trimmingCharacters(in: .whitespacesAndNewlines)
 }
 
 #Preview {

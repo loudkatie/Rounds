@@ -14,7 +14,7 @@ struct SplashView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 24) {
-                // White circle with heart
+                // White circle with two hearts icon
                 ZStack {
                     Circle()
                         .fill(.white)
@@ -24,9 +24,16 @@ struct SplashView: View {
                     RoundsHeartIcon(size: 70)
                 }
 
-                Text("Rounds AI")
-                    .font(.system(size: 42, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                // ROUNDS AI wordmark - spaced letters
+                VStack(spacing: 4) {
+                    Text("R O U N D S")
+                        .font(.system(size: 36, weight: .bold))
+                        .tracking(6)
+                    Text("A I")
+                        .font(.system(size: 24, weight: .bold))
+                        .tracking(10)
+                }
+                .foregroundColor(.white)
 
                 Text("Helping caregivers navigate\nmedical conversations.")
                     .font(.system(size: 18, weight: .medium))
