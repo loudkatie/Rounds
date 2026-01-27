@@ -40,71 +40,49 @@ struct RoundsColor {
     static let headerBlue = Color(red: 56/255, green: 152/255, blue: 224/255)
 }
 
-// MARK: - Heart+Cross Icon (matches Canva design - BIG rounded cross)
+// MARK: - Rounds Icon: Two Hearts (Caregiver + Patient)
+// Design: Larger heart "supporting" smaller heart - symbolizes caregiving relationship
 
 struct RoundsHeartIcon: View {
     var size: CGFloat = 32
-    var filled: Bool = true
     var color: Color = RoundsColor.buttonBlue
     
     var body: some View {
         ZStack {
-            // Heart
-            Image(systemName: filled ? "heart.fill" : "heart")
+            // Main heart (caregiver) - larger, positioned slightly left/back
+            Image(systemName: "heart.fill")
                 .font(.system(size: size, weight: .regular))
                 .foregroundColor(color)
             
-            // BIG cross with rounded corners (matches Canva icon)
-            // Cross is ~55% of heart size with rounded ends
-            RoundedCross(lineWidth: size * 0.18, length: size * 0.5)
-                .fill(.white)
-                .frame(width: size * 0.55, height: size * 0.55)
-                .offset(y: -size * 0.02)
+            // Small heart (patient) - smaller, nested inside, slightly offset
+            Image(systemName: "heart.fill")
+                .font(.system(size: size * 0.4, weight: .regular))
+                .foregroundColor(.white)
+                .offset(x: size * 0.02, y: size * 0.05)
         }
     }
 }
 
-// Custom rounded cross shape matching Canva design
-struct RoundedCross: Shape {
-    let lineWidth: CGFloat
-    let length: CGFloat
-    
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let center = CGPoint(x: rect.midX, y: rect.midY)
-        let halfWidth = lineWidth / 2
-        let halfLength = length / 2
-        let cornerRadius = lineWidth / 2  // Fully rounded ends
+#Preview {
+    VStack(spacing: 30) {
+        RoundsHeartIcon(size: 80)
+        RoundsHeartIcon(size: 50)
+        RoundsHeartIcon(size: 30)
         
-        // Vertical bar
-        path.addRoundedRect(
-            in: CGRect(
-                x: center.x - halfWidth,
-                y: center.y - halfLength,
-                width: lineWidth,
-                height: length
-            ),
-            cornerSize: CGSize(width: cornerRadius, height: cornerRadius)
-        )
-        
-        // Horizontal bar
-        path.addRoundedRect(
-            in: CGRect(
-                x: center.x - halfLength,
-                y: center.y - halfWidth,
-                width: length,
-                height: lineWidth
-            ),
-            cornerSize: CGSize(width: cornerRadius, height: cornerRadius)
-        )
-        
-        return path
+        // Show how it looks on blue background
+        ZStack {
+            Circle()
+                .fill(RoundsColor.buttonBlue)
+                .frame(width: 100, height: 100)
+            RoundsHeartIcon(size: 50, color: .white)
+        }
     }
+    .padding()
 }
 
 #Preview {
     VStack(spacing: 20) {
         RoundsHeartIcon(size: 50)
-        RoundsHeartIcon(size: 30, filled: false)
+        RoundsHeartIcon(size: 30)
     }
 }

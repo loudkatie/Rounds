@@ -116,7 +116,7 @@ struct OnboardingFlow: View {
         case 1: return !caregiverName.trimmingCharacters(in: .whitespaces).isEmpty
         case 2: return !patientName.trimmingCharacters(in: .whitespaces).isEmpty && !relationship.isEmpty
         case 3: return true
-        case 4: return micPermissionGranted && speechPermissionGranted
+        case 4: return true  // Always allow - button either requests permissions OR proceeds
         default: return false
         }
     }
@@ -305,6 +305,8 @@ private struct PatientStep: View {
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 90))], spacing: 10) {
                     ForEach(options, id: \.self) { opt in
                         Button {
+                            // Dismiss keyboard when selecting relationship
+                            isFocused.wrappedValue = false
                             relationship = opt
                         } label: {
                             Text(opt)
@@ -388,30 +390,46 @@ private struct PermissionsStep: View {
                         .foregroundColor(RoundsColor.textMedium)
                         .multilineTextAlignment(.center)
                 } else {
-                    Text("To capture and transcribe appointments, Rounds AI needs access to your microphone and speech recognition.")
+                    Text("To capture and transcribe appointments, Rounds AI needs:")
                         .font(.body)
                         .foregroundColor(RoundsColor.textMedium)
                         .multilineTextAlignment(.center)
-                        .lineSpacing(4)
                     
-                    // Permission status
-                    VStack(spacing: 12) {
-                        HStack {
-                            Image(systemName: micGranted ? "checkmark.circle.fill" : "circle")
-                                .foregroundColor(micGranted ? .green : RoundsColor.textMuted)
-                            Text("Microphone")
+                    // Simple list - no radio buttons
+                    VStack(alignment: .leading, spacing: 14) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "mic.fill")
+                                .font(.system(size: 18))
+                                .foregroundColor(RoundsColor.buttonBlue)
+                                .frame(width: 24)
+                            Text("Microphone access")
+                                .font(.body)
                                 .foregroundColor(RoundsColor.textDark)
                             Spacer()
+                            if micGranted {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.green)
+                                    .fontWeight(.bold)
+                            }
                         }
-                        HStack {
-                            Image(systemName: speechGranted ? "checkmark.circle.fill" : "circle")
-                                .foregroundColor(speechGranted ? .green : RoundsColor.textMuted)
-                            Text("Speech Recognition")
+                        
+                        HStack(spacing: 12) {
+                            Image(systemName: "waveform")
+                                .font(.system(size: 18))
+                                .foregroundColor(RoundsColor.buttonBlue)
+                                .frame(width: 24)
+                            Text("Speech recognition")
+                                .font(.body)
                                 .foregroundColor(RoundsColor.textDark)
                             Spacer()
+                            if speechGranted {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(.green)
+                                    .fontWeight(.bold)
+                            }
                         }
                     }
-                    .padding()
+                    .padding(20)
                     .background(RoundsColor.moduleBackground)
                     .cornerRadius(12)
                     
