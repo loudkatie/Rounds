@@ -1,8 +1,8 @@
 //
 //  ProfileStore.swift
-//  Rounds
+//  Rounds AI
 //
-//  Manages the caregiver's profile and persistent AI memory.
+//  Manages the caregiver's profile and initializes AI memory.
 //  Single source of truth for user identity across the app.
 //
 
@@ -32,10 +32,6 @@ final class ProfileStore: ObservableObject {
         currentProfile?.patientName ?? "your loved one"
     }
     
-    var aiMemory: AIMemoryContext? {
-        currentProfile?.aiMemory
-    }
-    
     // MARK: - Private
     
     private let storageKey = "rounds_user_profile"
@@ -63,28 +59,38 @@ final class ProfileStore: ObservableObject {
         currentProfile = profile
         saveProfile()
         
-        print("[ProfileStore] Created new profile for \(caregiverName)")
+        // Initialize the AI Memory Store with profile data
+        let relationship = extractRelationship(from: patientSituation)
+        AIMemoryStore.shared.initializeFromProfile(
+            caregiver: caregiverName,
+            patient: patientName,
+            relationship: relationship,
+            situation: patientSituation
+        )
+        
+        print("[ProfileStore] Created profile for \(caregiverName) caring for \(patientName)")
     }
     
-    /// Updates the AI memory context after a session
-    func updateAIMemory(_ updates: (inout AIMemoryContext) -> Void) {
-        guard var profile = currentProfile else { return }
-        
-        updates(&profile.aiMemory)
-        currentProfile = profile
-        saveProfile()
-        
-        print("[ProfileStore] Updated AI memory")
+    /// Extract relationship from situation string
+    private func extractRelationship(from situation: String) -> String {
+        let lowered = situation.lowercased()
+        let relationships = ["father", "mother", "dad", "mom", "spouse", "husband", "wife", 
+                            "child", "son", "daughter", "sibling", "brother", "sister", 
+                            "friend", "parent", "grandparent", "grandmother", "grandfather"]
+        for rel in relationships {
+            if lowered.contains(rel) {
+                return rel
+            }
+        }
+        return "loved one"
     }
     
-    /// Adds a session ID to the profile
+    /// Records a completed session
     func recordSession(_ sessionID: UUID) {
         guard var profile = currentProfile else { return }
-        
         profile.sessionIDs.append(sessionID)
         currentProfile = profile
         saveProfile()
-        
         print("[ProfileStore] Recorded session \(sessionID)")
     }
     
@@ -92,7 +98,11 @@ final class ProfileStore: ObservableObject {
     func resetProfile() {
         currentProfile = nil
         UserDefaults.standard.removeObject(forKey: storageKey)
-        print("[ProfileStore] Profile reset")
+        
+        // Also reset AI memory
+        AIMemoryStore.shared.resetMemory()
+        
+        print("[ProfileStore] Profile and memory reset")
     }
     
     // MARK: - Persistence
@@ -117,7 +127,6 @@ final class ProfileStore: ObservableObject {
         do {
             let data = try JSONEncoder().encode(profile)
             UserDefaults.standard.set(data, forKey: storageKey)
-            print("[ProfileStore] Saved profile")
         } catch {
             print("[ProfileStore] Failed to encode profile: \(error)")
         }

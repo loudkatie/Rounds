@@ -1,9 +1,9 @@
 //
 //  UserProfile.swift
-//  Rounds
+//  Rounds AI
 //
-//  The caregiver's identity and their relationship with Rounds AI.
-//  This is the foundation of the "growing friendship" model.
+//  The caregiver's basic identity info.
+//  Note: AI memory is now stored separately in AIMemoryStore.
 //
 
 import Foundation
@@ -20,9 +20,6 @@ struct UserProfile: Codable, Identifiable {
     // Session history
     var sessionIDs: [UUID]
     
-    // AI memory context (grows over time)
-    var aiMemory: AIMemoryContext
-    
     // MARK: - Initialization
     
     init(
@@ -38,11 +35,6 @@ struct UserProfile: Codable, Identifiable {
         self.patientName = patientName
         self.patientSituation = patientSituation
         self.sessionIDs = []
-        self.aiMemory = AIMemoryContext(
-            caregiverName: caregiverName,
-            patientName: patientName,
-            diagnosis: patientSituation
-        )
     }
     
     // MARK: - Computed Properties
