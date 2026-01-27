@@ -37,7 +37,7 @@ struct PreviousRoundsView: View {
                     Button("Done") {
                         dismiss()
                     }
-                    .foregroundColor(RoundsColor.brandBlue)
+                    .foregroundColor(RoundsColor.buttonBlue)
                 }
             }
         }
@@ -119,7 +119,7 @@ private struct SessionRowView: View {
                 if session.aiExplanation != nil {
                     Label("Analyzed", systemImage: "sparkles")
                         .font(.caption)
-                        .foregroundColor(RoundsColor.brandBlue)
+                        .foregroundColor(RoundsColor.buttonBlue)
                 }
 
                 if !session.conversationHistory.isEmpty {
