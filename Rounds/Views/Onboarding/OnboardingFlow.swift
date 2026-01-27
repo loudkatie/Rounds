@@ -186,9 +186,7 @@ private struct OnboardingHeader: View {
     var body: some View {
         VStack(spacing: 6) {
             // Heart icon
-            HeartPlusIcon(size: 28)
-                .font(.system(size: 28, weight: .regular))
-                .foregroundColor(brandBlue)
+            RoundsHeartIcon(size: 28, style: .gradient)
             
             // Wordmark
             Text("Rounds AI")
@@ -238,9 +236,7 @@ private struct WelcomeStep: View {
                     .fill(brandBlue.opacity(0.1))
                     .frame(width: 120, height: 120)
                 
-                HeartPlusIcon(size: 28)
-                    .font(.system(size: 56, weight: .regular))
-                    .foregroundColor(brandBlue)
+                RoundsHeartIcon(size: 56, style: .gradient)
             }
             
             VStack(spacing: 16) {

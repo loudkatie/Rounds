@@ -2,7 +2,7 @@
 //  SplashView.swift
 //  Rounds AI
 //
-//  Gradient blue splash with new tagline
+//  Launch screen - gradient blue with white circle containing heart+cross
 //
 
 import SwiftUI
@@ -10,45 +10,20 @@ import SwiftUI
 struct SplashView: View {
     var body: some View {
         ZStack {
-            // Gradient background - lighter blue at top, brand blue at bottom
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    Color(red: 65/255, green: 190/255, blue: 255/255),  // Lighter cyan-blue
-                    Color(red: 56/255, green: 152/255, blue: 224/255)   // Brand blue
-                ]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            // Gradient background matching brand colors
+            RoundsColor.brandGradient
+                .ignoresSafeArea()
 
             VStack(spacing: 24) {
-                // White circle with gradient heart+cross inside
+                // White circle with large heart+cross
                 ZStack {
                     Circle()
                         .fill(.white)
-                        .frame(width: 120, height: 120)
-                        .shadow(color: .black.opacity(0.1), radius: 10, y: 4)
+                        .frame(width: 140, height: 140)
+                        .shadow(color: .black.opacity(0.1), radius: 12, y: 4)
                     
-                    // Heart with cross - gradient version
-                    ZStack {
-                        Image(systemName: "heart.fill")
-                            .font(.system(size: 54, weight: .regular))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [
-                                        Color(red: 65/255, green: 190/255, blue: 255/255),
-                                        Color(red: 56/255, green: 152/255, blue: 224/255)
-                                    ],
-                                    startPoint: .top,
-                                    endPoint: .bottom
-                                )
-                            )
-                        
-                        Image(systemName: "plus")
-                            .font(.system(size: 22, weight: .bold))
-                            .foregroundColor(.white)
-                            .offset(y: -1)
-                    }
+                    // Heart+cross icon - BIG, fills the circle
+                    RoundsHeartIcon(size: 70, style: .gradient)
                 }
 
                 // App name
@@ -56,7 +31,7 @@ struct SplashView: View {
                     .font(.system(size: 42, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
 
-                // New tagline
+                // Tagline
                 Text("Helping caregivers navigate\nmedical conversations.")
                     .font(.system(size: 18, weight: .medium))
                     .foregroundColor(.white.opacity(0.95))
