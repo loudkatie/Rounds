@@ -1,168 +1,355 @@
 //
 //  AIMemoryContext.swift
-//  Rounds
+//  Rounds AI
 //
-//  The AI's persistent memory of the patient's journey.
-//  This grows over time as the caregiver shares more context.
+//  THE BRAIN: Persistent memory that makes GPT "remember" the patient.
+//  This grows over time as sessions accumulate.
 //  
-//  Design principle: The AI should feel like it KNOWS you,
-//  like a friend who's been following along the whole time.
+//  Design principle: GPT should feel like it KNOWS you,
+//  like a medical expert friend who's been following along the whole journey.
 //
 
 import Foundation
 
+// MARK: - Session Summary (stored after each recording)
+
+struct SessionMemory: Codable, Identifiable {
+    let id: UUID
+    let date: Date
+    var dayNumber: Int?  // e.g., "Day 5 post-transplant"
+    let keyPoints: [String]  // 3-5 main takeaways
+    let medicalValues: [String: String]  // "Creatinine": "1.4", "Tacrolimus": "11.2"
+    let concerns: [String]  // Things to watch
+    let nextSteps: [String]  // Follow-ups mentioned
+    let questionsAsked: [String]  // What caregiver asked about
+    
+    var dateFormatted: String {
+        let f = DateFormatter()
+        f.dateFormat = "EEE, MMM d"
+        return f.string(from: date)
+    }
+    
+    var shortDate: String {
+        let f = DateFormatter()
+        f.dateFormat = "M/d"
+        return f.string(from: date)
+    }
+}
+
+// MARK: - The Full Memory Context
+
 struct AIMemoryContext: Codable {
     
-    // MARK: - Core Identity (Never Forgotten)
+    // MARK: - Core Identity
     
     var caregiverName: String
     var patientName: String
+    var relationship: String  // "father", "mother", "spouse"
     var diagnosis: String
     
-    // MARK: - Medical Facts (Updated Each Session)
+    // MARK: - Patient Details
     
-    /// Key medical facts mentioned across sessions
-    /// e.g., "Don is on 2L supplemental oxygen", "Creatinine trending down"
-    var keyMedicalFacts: [String]
-    
-    /// Current medications mentioned
-    /// e.g., "Prednisone 40mg daily", "Tacrolimus 2mg BID"
+    var surgeryDate: Date?
+    var admissionDate: Date?
+    var hospitalInfo: String?
+    var careTeamMembers: [String]  // "Dr. Patel (Pulmonology)"
     var currentMedications: [String]
+    var allergies: [String]
     
-    /// Care team members mentioned by name
-    /// e.g., "Dr. Patel (pulmonology)", "Nurse Sarah (day shift)"
-    var careTeamMembers: [String]
+    // MARK: - Learned Knowledge (Grows Over Time)
     
-    /// Ongoing concerns or things being monitored
-    /// e.g., "Pain management", "Kidney function", "Infection risk"
-    var ongoingConcerns: [String]
+    var keyMedicalFacts: [String]  // Facts GPT has learned
+    var vitalTrends: [String: [VitalReading]]  // Track numbers: "Creatinine" -> [readings]
+    var observedPatterns: [String]  // "Temperature spikes in evening"
+    var ongoingConcerns: [String]  // Active issues being monitored
     
-    // MARK: - Session Summaries (Rolling Window)
+    // MARK: - Session History
     
-    /// Brief summaries of recent sessions (keep last 5)
-    var recentSessionSummaries: [SessionSummary]
+    var sessions: [SessionMemory]
     
-    // MARK: - Emotional Context
+    // MARK: - Caregiver Preferences
     
-    /// Notes about caregiver's emotional state or needs
-    /// e.g., "Katie mentioned feeling overwhelmed on 1/15"
-    var emotionalNotes: [String]
+    var caregiverConcerns: [String]  // What they worry about
+    var communicationStyle: String?  // "detailed", "concise"
+    var frequentQuestions: [String]  // Topics they ask about often
     
     // MARK: - Initialization
     
-    init(
-        caregiverName: String,
-        patientName: String,
-        diagnosis: String
-    ) {
+    init(caregiverName: String = "", patientName: String = "", relationship: String = "", diagnosis: String = "") {
         self.caregiverName = caregiverName
         self.patientName = patientName
+        self.relationship = relationship
         self.diagnosis = diagnosis
-        self.keyMedicalFacts = []
-        self.currentMedications = []
         self.careTeamMembers = []
+        self.currentMedications = []
+        self.allergies = []
+        self.keyMedicalFacts = []
+        self.vitalTrends = [:]
+        self.observedPatterns = []
         self.ongoingConcerns = []
-        self.recentSessionSummaries = []
-        self.emotionalNotes = []
+        self.sessions = []
+        self.caregiverConcerns = []
+        self.frequentQuestions = []
     }
     
-    // MARK: - Memory Updates
+    // MARK: - Computed Properties
     
-    /// Add a new session summary, keeping only the last 5
-    mutating func addSessionSummary(_ summary: SessionSummary) {
-        recentSessionSummaries.append(summary)
-        if recentSessionSummaries.count > 5 {
-            recentSessionSummaries.removeFirst()
+    var daysSinceSurgery: Int? {
+        guard let surgery = surgeryDate else { return nil }
+        return Calendar.current.dateComponents([.day], from: surgery, to: Date()).day
+    }
+    
+    var daysSinceAdmission: Int? {
+        guard let admission = admissionDate else { return nil }
+        return Calendar.current.dateComponents([.day], from: admission, to: Date()).day
+    }
+    
+    // MARK: - Update Methods
+    
+    mutating func addSession(_ session: SessionMemory) {
+        sessions.append(session)
+        // Keep last 30 sessions
+        if sessions.count > 30 {
+            sessions = Array(sessions.suffix(30))
         }
     }
     
-    /// Add a medical fact if not already present
     mutating func addMedicalFact(_ fact: String) {
         let normalized = fact.trimmingCharacters(in: .whitespacesAndNewlines)
         if !normalized.isEmpty && !keyMedicalFacts.contains(normalized) {
             keyMedicalFacts.append(normalized)
+            // Keep last 50 facts
+            if keyMedicalFacts.count > 50 {
+                keyMedicalFacts = Array(keyMedicalFacts.suffix(50))
+            }
         }
     }
     
-    /// Add a medication if not already present
-    mutating func addMedication(_ med: String) {
-        let normalized = med.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !normalized.isEmpty && !currentMedications.contains(normalized) {
-            currentMedications.append(normalized)
+    mutating func addPattern(_ pattern: String) {
+        let normalized = pattern.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !normalized.isEmpty && !observedPatterns.contains(normalized) {
+            observedPatterns.append(normalized)
         }
     }
     
-    /// Add a care team member if not already present
-    mutating func addCareTeamMember(_ member: String) {
-        let normalized = member.trimmingCharacters(in: .whitespacesAndNewlines)
-        if !normalized.isEmpty && !careTeamMembers.contains(normalized) {
-            careTeamMembers.append(normalized)
+    mutating func trackVital(_ name: String, value: Double, unit: String? = nil) {
+        let reading = VitalReading(date: Date(), value: value, unit: unit)
+        if vitalTrends[name] != nil {
+            vitalTrends[name]?.append(reading)
+            // Keep last 20 readings per vital
+            if vitalTrends[name]!.count > 20 {
+                vitalTrends[name] = Array(vitalTrends[name]!.suffix(20))
+            }
+        } else {
+            vitalTrends[name] = [reading]
         }
     }
     
-    // MARK: - Context for API Calls
-    
-    /// Generates a token-efficient summary for the AI system prompt
-    /// This is what gets sent to GPT each time — must be concise!
-    var contextSummary: String {
-        var parts: [String] = []
-        
-        // Core identity
-        parts.append("Caregiver: \(caregiverName)")
-        parts.append("Patient: \(patientName)")
-        parts.append("Diagnosis: \(diagnosis)")
-        
-        // Medical facts (limit to 5 most recent)
-        if !keyMedicalFacts.isEmpty {
-            let facts = keyMedicalFacts.suffix(5).joined(separator: "; ")
-            parts.append("Key facts: \(facts)")
+    mutating func recordQuestion(_ question: String) {
+        frequentQuestions.append(question)
+        if frequentQuestions.count > 30 {
+            frequentQuestions = Array(frequentQuestions.suffix(30))
         }
+    }
+    
+    // MARK: - Generate Context for API
+    
+    /// Builds the full context string to include in every GPT call
+    func buildSystemContext() -> String {
+        var context = """
+        You are Rounds AI, \(caregiverName)'s dedicated medical translation assistant.
+        You've been helping \(caregiverName) care for their \(relationship) \(patientName).
         
-        // Medications
+        YOUR ROLE:
+        - Translate complex medical conversations into plain language
+        - Remember everything about \(patientName)'s medical journey
+        - Provide context and explain medical terms at a 12th-grade reading level
+        - Be warm, supportive, and thorough
+        
+        """
+        
+        // Patient context
+        context += "PATIENT INFORMATION:\n"
+        context += "- Name: \(patientName)\n"
+        context += "- Relationship: \(caregiverName)'s \(relationship)\n"
+        
+        if !diagnosis.isEmpty {
+            context += "- Diagnosis: \(diagnosis)\n"
+        }
+        if let days = daysSinceSurgery {
+            context += "- Day \(days) post-surgery\n"
+        }
+        if let days = daysSinceAdmission {
+            context += "- Day \(days) since admission\n"
+        }
+        if let hospital = hospitalInfo, !hospital.isEmpty {
+            context += "- Location: \(hospital)\n"
+        }
         if !currentMedications.isEmpty {
-            let meds = currentMedications.joined(separator: ", ")
-            parts.append("Medications: \(meds)")
+            context += "- Medications: \(currentMedications.joined(separator: ", "))\n"
         }
-        
-        // Care team
         if !careTeamMembers.isEmpty {
-            let team = careTeamMembers.joined(separator: ", ")
-            parts.append("Care team: \(team)")
+            context += "- Care team: \(careTeamMembers.joined(separator: ", "))\n"
+        }
+        context += "\n"
+        
+        // Learned facts
+        if !keyMedicalFacts.isEmpty {
+            context += "MEDICAL FACTS YOU'VE LEARNED:\n"
+            for fact in keyMedicalFacts.suffix(15) {
+                context += "- \(fact)\n"
+            }
+            context += "\n"
         }
         
-        // Concerns
+        // Vital trends
+        if !vitalTrends.isEmpty {
+            context += "VITAL SIGN TRENDS:\n"
+            for (name, readings) in vitalTrends {
+                if readings.count >= 2 {
+                    let values = readings.suffix(5).map { 
+                        String(format: "%.1f", $0.value) + ($0.unit ?? "")
+                    }.joined(separator: " → ")
+                    context += "- \(name): \(values)\n"
+                }
+            }
+            context += "\n"
+        }
+        
+        // Patterns
+        if !observedPatterns.isEmpty {
+            context += "PATTERNS YOU'VE NOTICED:\n"
+            for pattern in observedPatterns {
+                context += "- \(pattern)\n"
+            }
+            context += "\n"
+        }
+        
+        // Ongoing concerns
         if !ongoingConcerns.isEmpty {
-            let concerns = ongoingConcerns.joined(separator: ", ")
-            parts.append("Monitoring: \(concerns)")
+            context += "THINGS BEING MONITORED:\n"
+            for concern in ongoingConcerns {
+                context += "- \(concern)\n"
+            }
+            context += "\n"
         }
         
-        // Recent sessions (just dates and one-liners)
-        if !recentSessionSummaries.isEmpty {
-            let recents = recentSessionSummaries.suffix(3).map { summary in
-                "\(summary.dateString): \(summary.oneLiner)"
-            }.joined(separator: " | ")
-            parts.append("Recent: \(recents)")
+        // Session history
+        if !sessions.isEmpty {
+            context += "PAST SESSION SUMMARIES:\n"
+            for session in sessions.suffix(7) {
+                context += "\n[\(session.dateFormatted)"
+                if let day = session.dayNumber {
+                    context += " - Day \(day)"
+                }
+                context += "]\n"
+                for point in session.keyPoints.prefix(3) {
+                    context += "  • \(point)\n"
+                }
+            }
+            context += "\n"
         }
         
-        return parts.joined(separator: "\n")
+        // Caregiver info
+        if !caregiverConcerns.isEmpty {
+            context += "\(caregiverName.uppercased())'S MAIN CONCERNS:\n"
+            for concern in caregiverConcerns {
+                context += "- \(concern)\n"
+            }
+            context += "\n"
+        }
+        
+        return context
     }
     
-    /// Estimated token count for the context summary
-    var estimatedTokens: Int {
-        // Rough estimate: 1 token ≈ 4 characters
-        return contextSummary.count / 4
+    /// Token-efficient summary for shorter calls
+    var shortSummary: String {
+        var parts: [String] = []
+        parts.append("Patient: \(patientName) (\(caregiverName)'s \(relationship))")
+        if !diagnosis.isEmpty { parts.append("Dx: \(diagnosis)") }
+        if let days = daysSinceSurgery { parts.append("Day \(days) post-op") }
+        if !keyMedicalFacts.isEmpty {
+            parts.append("Key facts: \(keyMedicalFacts.suffix(5).joined(separator: "; "))")
+        }
+        return parts.joined(separator: " | ")
     }
 }
 
-// MARK: - Session Summary
+// MARK: - Vital Reading
 
-struct SessionSummary: Codable {
+struct VitalReading: Codable {
     let date: Date
-    let oneLiner: String  // e.g., "Oxygen stable, starting PT tomorrow"
+    let value: Double
+    let unit: String?
+}
+
+// MARK: - Memory Store (Singleton)
+
+@MainActor
+class AIMemoryStore: ObservableObject {
+    static let shared = AIMemoryStore()
     
-    var dateString: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "M/d"
-        return formatter.string(from: date)
+    @Published var memory: AIMemoryContext
+    
+    private let storageKey = "rounds_ai_memory_v2"
+    
+    init() {
+        if let data = UserDefaults.standard.data(forKey: "rounds_ai_memory_v2"),
+           let decoded = try? JSONDecoder().decode(AIMemoryContext.self, from: data) {
+            self.memory = decoded
+        } else {
+            self.memory = AIMemoryContext()
+        }
+    }
+    
+    func save() {
+        if let encoded = try? JSONEncoder().encode(memory) {
+            UserDefaults.standard.set(encoded, forKey: storageKey)
+        }
+    }
+    
+    func initializeFromProfile(caregiver: String, patient: String, relationship: String, situation: String) {
+        memory.caregiverName = caregiver
+        memory.patientName = patient
+        memory.relationship = relationship
+        memory.diagnosis = situation
+        save()
+    }
+    
+    func addSessionMemory(keyPoints: [String], medicalValues: [String: String] = [:], concerns: [String] = [], nextSteps: [String] = [], questionsAsked: [String] = [], dayNumber: Int? = nil) {
+        let session = SessionMemory(
+            id: UUID(),
+            date: Date(),
+            dayNumber: dayNumber,
+            keyPoints: keyPoints,
+            medicalValues: medicalValues,
+            concerns: concerns,
+            nextSteps: nextSteps,
+            questionsAsked: questionsAsked
+        )
+        memory.addSession(session)
+        save()
+    }
+    
+    func learnFacts(_ facts: [String]) {
+        for fact in facts {
+            memory.addMedicalFact(fact)
+        }
+        save()
+    }
+    
+    func learnPattern(_ pattern: String) {
+        memory.addPattern(pattern)
+        save()
+    }
+    
+    func recordVital(_ name: String, value: Double, unit: String? = nil) {
+        memory.trackVital(name, value: value, unit: unit)
+        save()
+    }
+    
+    func resetMemory() {
+        memory = AIMemoryContext()
+        save()
     }
 }
