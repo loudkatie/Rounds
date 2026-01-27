@@ -160,23 +160,40 @@ struct OnboardingFlow: View {
     }
     
     private func checkPermissions() {
-        micPermissionGranted = AVAudioSession.sharedInstance().recordPermission == .granted
+        // iOS 17+ API for mic permission
+        if #available(iOS 17.0, *) {
+            micPermissionGranted = AVAudioApplication.shared.recordPermission == .granted
+        } else {
+            micPermissionGranted = AVAudioSession.sharedInstance().recordPermission == .granted
+        }
         speechPermissionGranted = SFSpeechRecognizer.authorizationStatus() == .authorized
     }
     
     private func requestPermissions() {
-        // Request mic
-        AVAudioSession.sharedInstance().requestRecordPermission { granted in
+        // Request mic - iOS 17+ API
+        if #available(iOS 17.0, *) {
+            AVAudioApplication.requestRecordPermission { granted in
+                DispatchQueue.main.async {
+                    self.micPermissionGranted = granted
+                    self.requestSpeechPermission()
+                }
+            }
+        } else {
+            AVAudioSession.sharedInstance().requestRecordPermission { granted in
+                DispatchQueue.main.async {
+                    self.micPermissionGranted = granted
+                    self.requestSpeechPermission()
+                }
+            }
+        }
+    }
+    
+    private func requestSpeechPermission() {
+        SFSpeechRecognizer.requestAuthorization { status in
             DispatchQueue.main.async {
-                micPermissionGranted = granted
-                // Then request speech
-                SFSpeechRecognizer.requestAuthorization { status in
-                    DispatchQueue.main.async {
-                        speechPermissionGranted = (status == .authorized)
-                        if micPermissionGranted && speechPermissionGranted {
-                            completeOnboarding()
-                        }
-                    }
+                self.speechPermissionGranted = (status == .authorized)
+                if self.micPermissionGranted && self.speechPermissionGranted {
+                    self.completeOnboarding()
                 }
             }
         }

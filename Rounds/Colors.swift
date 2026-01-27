@@ -40,7 +40,7 @@ struct RoundsColor {
     static let headerBlue = Color(red: 56/255, green: 152/255, blue: 224/255)
 }
 
-// MARK: - Heart+Cross Icon
+// MARK: - Heart+Cross Icon (matches Canva design - BIG rounded cross)
 
 struct RoundsHeartIcon: View {
     var size: CGFloat = 32
@@ -49,15 +49,56 @@ struct RoundsHeartIcon: View {
     
     var body: some View {
         ZStack {
+            // Heart
             Image(systemName: filled ? "heart.fill" : "heart")
                 .font(.system(size: size, weight: .regular))
                 .foregroundColor(color)
             
-            Image(systemName: "plus")
-                .font(.system(size: size * 0.4, weight: .bold))
-                .foregroundColor(.white)
+            // BIG cross with rounded corners (matches Canva icon)
+            // Cross is ~55% of heart size with rounded ends
+            RoundedCross(lineWidth: size * 0.18, length: size * 0.5)
+                .fill(.white)
+                .frame(width: size * 0.55, height: size * 0.55)
                 .offset(y: -size * 0.02)
         }
+    }
+}
+
+// Custom rounded cross shape matching Canva design
+struct RoundedCross: Shape {
+    let lineWidth: CGFloat
+    let length: CGFloat
+    
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        let halfWidth = lineWidth / 2
+        let halfLength = length / 2
+        let cornerRadius = lineWidth / 2  // Fully rounded ends
+        
+        // Vertical bar
+        path.addRoundedRect(
+            in: CGRect(
+                x: center.x - halfWidth,
+                y: center.y - halfLength,
+                width: lineWidth,
+                height: length
+            ),
+            cornerSize: CGSize(width: cornerRadius, height: cornerRadius)
+        )
+        
+        // Horizontal bar
+        path.addRoundedRect(
+            in: CGRect(
+                x: center.x - halfLength,
+                y: center.y - halfWidth,
+                width: length,
+                height: lineWidth
+            ),
+            cornerSize: CGSize(width: cornerRadius, height: cornerRadius)
+        )
+        
+        return path
     }
 }
 
