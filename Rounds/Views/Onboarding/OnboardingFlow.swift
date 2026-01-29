@@ -72,6 +72,27 @@ struct OnboardingFlow: View {
                 }
             }
             .padding(.horizontal, 24)
+            .gesture(
+                DragGesture(minimumDistance: 50, coordinateSpace: .local)
+                    .onEnded { value in
+                        // Swipe left = next (if can proceed)
+                        if value.translation.width < -50 && canProceed && currentStep < totalSteps - 1 {
+                            isInputFocused = false
+                            withAnimation { currentStep += 1 }
+                            // Auto-focus on text fields
+                            if currentStep >= 1 && currentStep <= 3 {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                                    isInputFocused = true
+                                }
+                            }
+                        }
+                        // Swipe right = back
+                        if value.translation.width > 50 && currentStep > 0 {
+                            isInputFocused = false
+                            withAnimation { currentStep -= 1 }
+                        }
+                    }
+            )
             
             Spacer()
             
@@ -218,13 +239,13 @@ private struct WelcomeStep: View {
                     .fontWeight(.bold)
                     .foregroundColor(RoundsColor.textDark)
                 
-                Text("I'm your AI assistant here to help you talk to doctors and medical teams.")
+                Text("I am an AI assistant created to help caregivers and patients talk to doctors and medical teams.")
                     .font(.body)
                     .foregroundColor(RoundsColor.textMedium)
                     .multilineTextAlignment(.center)
                     .lineSpacing(4)
                 
-                Text("I listen during appointments and translate medical speak into plain language you can understand and share.")
+                Text("I listen during appointments, translating medical speak into plain language you can understand and share.")
                     .font(.body)
                     .foregroundColor(RoundsColor.textMedium)
                     .multilineTextAlignment(.center)

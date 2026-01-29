@@ -5,6 +5,8 @@
 //  Native Apple Speech Recognition Service
 //  Uses on-device speech recognition for real-time transcription
 //
+//  MEMORY OPTIMIZATION: Uses autorelease pool to prevent buffer accumulation
+//
 
 import Foundation
 import Speech
@@ -17,7 +19,7 @@ final class STTService: ObservableObject {
     @Published private(set) var finalTranscript: String = ""
 
     private let speechRecognizer: SFSpeechRecognizer?
-    private let audioEngine = AVAudioEngine()
+    private var audioEngine: AVAudioEngine?
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
 
@@ -69,18 +71,26 @@ final class STTService: ObservableObject {
             return false
         }
 
+        // Create FRESH audio engine each time to prevent memory accumulation
+        audioEngine = AVAudioEngine()
+        guard let audioEngine = audioEngine else { return false }
+        
         recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
         guard let recognitionRequest = recognitionRequest else { return false }
 
         recognitionRequest.shouldReportPartialResults = true
         recognitionRequest.addsPunctuation = true
 
-        // Configure audio input
+        // Configure audio input with LARGER buffer for efficiency
         let inputNode = audioEngine.inputNode
         let recordingFormat = inputNode.outputFormat(forBus: 0)
         
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { [weak self] buffer, _ in
-            self?.recognitionRequest?.append(buffer)
+        // Use larger buffer (4096) to reduce callback frequency and memory churn
+        inputNode.installTap(onBus: 0, bufferSize: 4096, format: recordingFormat) { [weak self] buffer, _ in
+            // Wrap in autorelease pool to prevent memory accumulation
+            autoreleasepool {
+                self?.recognitionRequest?.append(buffer)
+            }
         }
 
         recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { [weak self] result, error in
@@ -116,11 +126,11 @@ final class STTService: ObservableObject {
     func stopTranscription() {
         guard isTranscribing else { return }
         
-        audioEngine.stop()
-        audioEngine.inputNode.removeTap(onBus: 0)
+        audioEngine?.stop()
+        audioEngine?.inputNode.removeTap(onBus: 0)
         recognitionRequest?.endAudio()
         
-        // Give it a moment to finalize
+        // Give it a moment to finalize, then cleanup
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
             self?.cleanup()
         }
@@ -129,16 +139,18 @@ final class STTService: ObservableObject {
     }
     
     func cancelTranscription() {
-        audioEngine.stop()
-        audioEngine.inputNode.removeTap(onBus: 0)
+        audioEngine?.stop()
+        audioEngine?.inputNode.removeTap(onBus: 0)
         recognitionRequest?.endAudio()
         recognitionTask?.cancel()
         cleanup()
     }
 
     private func cleanup() {
+        // Nil out all references to free memory
         recognitionRequest = nil
         recognitionTask = nil
+        audioEngine = nil  // Release the engine entirely
         isTranscribing = false
         
         // Deactivate audio session

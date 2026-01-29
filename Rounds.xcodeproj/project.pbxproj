@@ -12,13 +12,10 @@
 		0F5624642FC3DEBF636D4E05 /* TranscriptViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCD495C8E952C21B4A0C638 /* TranscriptViewModel.swift */; };
 		28BA9ED5E2CE8D90971787EB /* RoundsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D5E2CBCF2022821DAF3EA6 /* RoundsApp.swift */; };
 		2D291DBADF3A03529AA64912 /* MWDATCore in Frameworks */ = {isa = PBXBuildFile; productRef = F8F986E3457ED24C829F07BC /* MWDATCore */; };
-		5E370129F148FBA3AC4F0BF6 /* TranscriptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5168F8C2DCDB2CD2ED17A736 /* TranscriptView.swift */; };
 		78882DE3754C795C63674F68 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 19954A876539BD2B8B878A59 /* Assets.xcassets */; };
 		7FF479BA06EE34CECFE3DB53 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3C1324FBF33E2FA99D2D46 /* Colors.swift */; };
 		85998A3221AFFC0380367731 /* MWDATCamera in Frameworks */ = {isa = PBXBuildFile; productRef = 915A3C829B9327B9C12582E0 /* MWDATCamera */; };
 		95FA16A6A146191FA1E9EBCB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E70E29DB16097D12CEFCF6 /* ContentView.swift */; };
-		9BB026F1AA241A915194FE47 /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36CCDF73721AA49A60ADD59 /* SummaryView.swift */; };
-		C974D6D04710797D0F069984 /* ConnectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4BF7B19B5AAD35AC592516 /* ConnectView.swift */; };
 		CONFIG0BUILD001122334455 /* Rounds/Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = CONFIG0PLIST001122334455 /* Rounds/Config.plist */; };
 		E2BD55E72F258192005CC801 /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2BD55E52F258192005CC801 /* UserProfile.swift */; };
 		E2BD55E82F258192005CC801 /* RoundsAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2BD55E32F258192005CC801 /* RoundsAnalysis.swift */; };
@@ -37,11 +34,8 @@
 		0EAC4EC60BDCC8C3B088F0F2 /* Rounds.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Rounds.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		19954A876539BD2B8B878A59 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3CCD495C8E952C21B4A0C638 /* TranscriptViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptViewModel.swift; sourceTree = "<group>"; };
-		5168F8C2DCDB2CD2ED17A736 /* TranscriptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptView.swift; sourceTree = "<group>"; };
 		84D5E2CBCF2022821DAF3EA6 /* RoundsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundsApp.swift; sourceTree = "<group>"; };
 		AD3C1324FBF33E2FA99D2D46 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
-		B36CCDF73721AA49A60ADD59 /* SummaryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
-		CA4BF7B19B5AAD35AC592516 /* ConnectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectView.swift; sourceTree = "<group>"; };
 		CBADB6C24348E9029BB6D22C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		CFE6083E5AB193B043FB2E19 /* LandingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandingView.swift; sourceTree = "<group>"; };
 		CONFIG0PLIST001122334455 /* Rounds/Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Rounds/Config.plist; sourceTree = "<group>"; };
@@ -80,12 +74,9 @@
 		0AA0126481C322DABE02BD55 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				CA4BF7B19B5AAD35AC592516 /* ConnectView.swift */,
 				CFE6083E5AB193B043FB2E19 /* LandingView.swift */,
 				DE7A17214D70FD58A0143B31 /* RootView.swift */,
 				D6241002C45A88622015BE83 /* SplashView.swift */,
-				B36CCDF73721AA49A60ADD59 /* SummaryView.swift */,
-				5168F8C2DCDB2CD2ED17A736 /* TranscriptView.swift */,
 				E2BD55EC2F2581C2005CC801 /* Onboarding */,
 				E2BD55ED2F2581C2005CC801 /* PreviousRoundsView.swift */,
 			);
@@ -252,7 +243,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				7FF479BA06EE34CECFE3DB53 /* Colors.swift in Sources */,
-				C974D6D04710797D0F069984 /* ConnectView.swift in Sources */,
 				95FA16A6A146191FA1E9EBCB /* ContentView.swift in Sources */,
 				EF517A2A7DEE82DA91503E35 /* LandingView.swift in Sources */,
 				E2BD55F92F2582D5005CC801 /* AIMemoryContext.swift in Sources */,
@@ -267,8 +257,6 @@
 				PROFILE_BUILD_01122334455 /* ProfileStore.swift in Sources */,
 				OPENAI_BUILD_001122334455 /* OpenAIService.swift in Sources */,
 				F3349619F86295E1D47A18EE /* SplashView.swift in Sources */,
-				9BB026F1AA241A915194FE47 /* SummaryView.swift in Sources */,
-				5E370129F148FBA3AC4F0BF6 /* TranscriptView.swift in Sources */,
 				0F5624642FC3DEBF636D4E05 /* TranscriptViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
