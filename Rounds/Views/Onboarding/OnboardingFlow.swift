@@ -75,20 +75,16 @@ struct OnboardingFlow: View {
             .gesture(
                 DragGesture(minimumDistance: 50, coordinateSpace: .local)
                     .onEnded { value in
+                        // Always dismiss keyboard on swipe
+                        isInputFocused = false
+                        
                         // Swipe left = next (if can proceed)
                         if value.translation.width < -50 && canProceed && currentStep < totalSteps - 1 {
-                            isInputFocused = false
                             withAnimation { currentStep += 1 }
-                            // Auto-focus on text fields
-                            if currentStep >= 1 && currentStep <= 3 {
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                                    isInputFocused = true
-                                }
-                            }
+                            // NO auto-focus - let user tap field
                         }
                         // Swipe right = back
                         if value.translation.width > 50 && currentStep > 0 {
-                            isInputFocused = false
                             withAnimation { currentStep -= 1 }
                         }
                     }
@@ -163,12 +159,7 @@ struct OnboardingFlow: View {
         }
         
         withAnimation { currentStep += 1 }
-        
-        if currentStep >= 1 && currentStep <= 3 {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                isInputFocused = true
-            }
-        }
+        // NO auto-focus - let user tap field when ready
     }
     
     private func completeOnboarding() {
