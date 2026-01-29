@@ -7,11 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CONFIG0BUILD001122334455 /* Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = CONFIG0PLIST001122334455 /* Config.plist */; };
 		00CAA0D3098F1307B5171BC1 /* MWDATMockDevice in Frameworks */ = {isa = PBXBuildFile; productRef = 67800147391143BE11021C09 /* MWDATMockDevice */; };
-		OPENAI_BUILD_001122334455 /* OpenAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = OPENAI001122334455667788 /* OpenAIService.swift */; };
-		PROFILE_BUILD_01122334455 /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = PROFILE01122334455667788 /* ProfileStore.swift */; };
-		SESSION_BUILD_01122334455 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = SESSION01122334455667788 /* SessionStore.swift */; };
 		03AB9333F128F912DD49B090 /* STTService.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF93D3FFD8451E4E2E0238A4 /* STTService.swift */; };
 		0F5624642FC3DEBF636D4E05 /* TranscriptViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CCD495C8E952C21B4A0C638 /* TranscriptViewModel.swift */; };
 		28BA9ED5E2CE8D90971787EB /* RoundsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84D5E2CBCF2022821DAF3EA6 /* RoundsApp.swift */; };
@@ -23,6 +19,7 @@
 		95FA16A6A146191FA1E9EBCB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E70E29DB16097D12CEFCF6 /* ContentView.swift */; };
 		9BB026F1AA241A915194FE47 /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36CCDF73721AA49A60ADD59 /* SummaryView.swift */; };
 		C974D6D04710797D0F069984 /* ConnectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4BF7B19B5AAD35AC592516 /* ConnectView.swift */; };
+		CONFIG0BUILD001122334455 /* Rounds/Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = CONFIG0PLIST001122334455 /* Rounds/Config.plist */; };
 		E2BD55E72F258192005CC801 /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2BD55E52F258192005CC801 /* UserProfile.swift */; };
 		E2BD55E82F258192005CC801 /* RoundsAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2BD55E32F258192005CC801 /* RoundsAnalysis.swift */; };
 		E2BD55E92F258192005CC801 /* RecordingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2BD55E22F258192005CC801 /* RecordingSession.swift */; };
@@ -31,11 +28,13 @@
 		EF517A2A7DEE82DA91503E35 /* LandingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE6083E5AB193B043FB2E19 /* LandingView.swift */; };
 		F3349619F86295E1D47A18EE /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6241002C45A88622015BE83 /* SplashView.swift */; };
 		FB18C2C56D2347218F226668 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7A17214D70FD58A0143B31 /* RootView.swift */; };
+		OPENAI_BUILD_001122334455 /* OpenAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = OPENAI001122334455667788 /* OpenAIService.swift */; };
+		PROFILE_BUILD_01122334455 /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = PROFILE01122334455667788 /* ProfileStore.swift */; };
+		SESSION_BUILD_01122334455 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = SESSION01122334455667788 /* SessionStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		CONFIG0PLIST001122334455 /* Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Rounds/Config.plist; sourceTree = "<group>"; };
-		0EAC4EC60BDCC8C3B088F0F2 /* Rounds.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Rounds.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0EAC4EC60BDCC8C3B088F0F2 /* Rounds.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Rounds.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		19954A876539BD2B8B878A59 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3CCD495C8E952C21B4A0C638 /* TranscriptViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptViewModel.swift; sourceTree = "<group>"; };
 		5168F8C2DCDB2CD2ED17A736 /* TranscriptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptView.swift; sourceTree = "<group>"; };
@@ -45,6 +44,7 @@
 		CA4BF7B19B5AAD35AC592516 /* ConnectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectView.swift; sourceTree = "<group>"; };
 		CBADB6C24348E9029BB6D22C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		CFE6083E5AB193B043FB2E19 /* LandingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandingView.swift; sourceTree = "<group>"; };
+		CONFIG0PLIST001122334455 /* Rounds/Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Rounds/Config.plist; sourceTree = "<group>"; };
 		D6241002C45A88622015BE83 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		DE7A17214D70FD58A0143B31 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		E2BD55E22F258192005CC801 /* RecordingSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingSession.swift; sourceTree = "<group>"; };
@@ -52,11 +52,11 @@
 		E2BD55E52F258192005CC801 /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
 		E2BD55ED2F2581C2005CC801 /* PreviousRoundsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviousRoundsView.swift; sourceTree = "<group>"; };
 		E2BD55F82F2582D5005CC801 /* AIMemoryContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIMemoryContext.swift; sourceTree = "<group>"; };
+		EF93D3FFD8451E4E2E0238A4 /* STTService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STTService.swift; sourceTree = "<group>"; };
+		F0E70E29DB16097D12CEFCF6 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		OPENAI001122334455667788 /* OpenAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIService.swift; sourceTree = "<group>"; };
 		PROFILE01122334455667788 /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStore.swift; sourceTree = "<group>"; };
 		SESSION01122334455667788 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
-		EF93D3FFD8451E4E2E0238A4 /* STTService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STTService.swift; sourceTree = "<group>"; };
-		F0E70E29DB16097D12CEFCF6 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -108,6 +108,7 @@
 			children = (
 				62DB14282FD85E3594FB8044 /* Rounds */,
 				D3263926B6DF745F4EEEE81E /* Products */,
+				E24225482F29289100DA7B8C /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -160,6 +161,14 @@
 				EF93D3FFD8451E4E2E0238A4 /* STTService.swift */,
 			);
 			path = Services;
+			sourceTree = "<group>";
+		};
+		E24225482F29289100DA7B8C /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				CONFIG0PLIST001122334455 /* Rounds/Config.plist */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -230,7 +239,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CONFIG0BUILD001122334455 /* Config.plist in Resources */,
+				CONFIG0BUILD001122334455 /* Rounds/Config.plist in Resources */,
 				78882DE3754C795C63674F68 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -272,13 +281,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = VR88MM2R4N;
 				INFOPLIST_FILE = Rounds/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Rounds AI";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Rounds connects to Meta glasses via Bluetooth";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Rounds connects to Meta glasses via Bluetooth";
 				INFOPLIST_KEY_NSBluetoothWhileInUseUsageDescription = "Rounds connects to Meta glasses via Bluetooth";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Rounds needs microphone access to transcribe your conversations";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Rounds uses speech recognition to create live transcripts";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Rounds AI needs microphone access to record and transcribe medical conversations in real time.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Rounds AI uses speech recognition to transcribe your conversations live, helping you capture important medical information.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -288,7 +300,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.rounds.app;
+				MARKETING_VERSION = 1.0.3;
+				PRODUCT_BUNDLE_IDENTIFIER = com.loudlabs.roundsai;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -420,13 +433,16 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = VR88MM2R4N;
 				INFOPLIST_FILE = Rounds/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Rounds AI";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "Rounds connects to Meta glasses via Bluetooth";
 				INFOPLIST_KEY_NSBluetoothPeripheralUsageDescription = "Rounds connects to Meta glasses via Bluetooth";
 				INFOPLIST_KEY_NSBluetoothWhileInUseUsageDescription = "Rounds connects to Meta glasses via Bluetooth";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Rounds needs microphone access to transcribe your conversations";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Rounds uses speech recognition to create live transcripts";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Rounds AI needs microphone access to record and transcribe medical conversations in real time.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Rounds AI uses speech recognition to transcribe your conversations live, helping you capture important medical information.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -436,7 +452,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.rounds.app;
+				MARKETING_VERSION = 1.0.3;
+				PRODUCT_BUNDLE_IDENTIFIER = com.loudlabs.roundsai;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

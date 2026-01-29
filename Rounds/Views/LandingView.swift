@@ -48,7 +48,7 @@ struct LandingView: View {
                 showPreviousRounds: $showPreviousRounds,
                 showAccount: $showAccount,
                 hasHistory: !sessionStore.sessions.isEmpty,
-                hasActiveSession: !viewModel.liveTranscript.isEmpty
+                hasActiveSession: viewModel.isInSessionChain && !viewModel.liveTranscript.isEmpty
             )
         }
         .background(Color.white)
@@ -134,6 +134,10 @@ private struct RecordingView: View {
 
             // BIG BRIGHT BLUE BUTTON (150px!)
             Button {
+                // Haptic feedback
+                let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                impactFeedback.impactOccurred()
+                
                 Task {
                     if viewModel.isSessionActive {
                         await viewModel.endSession()
@@ -479,8 +483,15 @@ private struct ResultsView: View {
     private func sendFollowUp() {
         guard !followUpText.isEmpty && !viewModel.isAnalyzing else { return }
         let q = followUpText
-        followUpText = ""
+        
+        // Dismiss keyboard FIRST, then clear text
         isFollowUpFocused.wrappedValue = false
+        
+        // Small delay to let keyboard dismiss before clearing
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            followUpText = ""
+        }
+        
         Task {
             await viewModel.askFollowUp(q)
             withAnimation { scrollProxy.scrollTo("followUp", anchor: .bottom) }
@@ -620,7 +631,7 @@ private struct TranscriptSheet: View {
             .navigationTitle("Full Transcript")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") { dismiss() }
                 }
             }
@@ -671,13 +682,22 @@ private struct AccountSheet: View {
                         Text(profileStore.patientName)
                             .foregroundColor(.gray)
                     }
+                    if let situation = profileStore.currentProfile?.patientSituation,
+                       !situation.isEmpty {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Situation")
+                            Text(situation)
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
+                    }
                 }
                 
                 Section("App") {
                     HStack {
                         Text("Version")
                         Spacer()
-                        Text("1.0.0")
+                        Text(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0")
                             .foregroundColor(.gray)
                     }
                 }

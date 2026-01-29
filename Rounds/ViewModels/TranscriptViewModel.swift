@@ -85,11 +85,15 @@ final class TranscriptViewModel: ObservableObject {
             // APPEND MODE: Keep existing transcript, analysis, and conversation
             print("[TranscriptViewModel] Chaining to existing session (within 1-hour window)")
             // Store the current transcript as the base for appending
+            // Also preserve the accumulated duration
             if currentSession == nil {
                 currentSession = RecordingSession(
                     transcript: liveTranscript,
                     durationSeconds: elapsedSeconds
                 )
+            } else {
+                // Load duration from existing session if we have one
+                elapsedSeconds = currentSession?.durationSeconds ?? elapsedSeconds
             }
         } else {
             // NEW SESSION: Reset everything

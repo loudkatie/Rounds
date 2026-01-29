@@ -134,12 +134,13 @@ struct AIMemoryContext: Codable {
     
     mutating func trackVital(_ name: String, value: Double, unit: String? = nil) {
         let reading = VitalReading(date: Date(), value: value, unit: unit)
-        if vitalTrends[name] != nil {
-            vitalTrends[name]?.append(reading)
+        if var existing = vitalTrends[name] {
+            existing.append(reading)
             // Keep last 20 readings per vital
-            if vitalTrends[name]!.count > 20 {
-                vitalTrends[name] = Array(vitalTrends[name]!.suffix(20))
+            if existing.count > 20 {
+                existing = Array(existing.suffix(20))
             }
+            vitalTrends[name] = existing
         } else {
             vitalTrends[name] = [reading]
         }
