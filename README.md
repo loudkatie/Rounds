@@ -2,6 +2,9 @@
 
 **A caregiver's companion for understanding medical conversations.**
 
+> 🤖 **Claude Cofounder?** Start here: [COFOUNDER_README.md](./COFOUNDER_README.md)  
+> 📚 **Framework Docs:** See `/Users/katiemacair-2025/04_Developer/LOUD_LABS_PRODUCT_FRAMEWORK_V2.md` and `LOUD_LABS_COMPANION_FRAMEWORK.md`
+
 Rounds helps caregivers capture, translate, and understand what doctors say during hospital rounds and medical appointments. Think of it as having a med-school friend in the room who can explain everything in plain English.
 
 ---
