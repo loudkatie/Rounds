@@ -1,6 +1,46 @@
 # Rounds AI - Changelog
 
-## [0.2.0] - 2026-01-26 (Current Build)
+## [0.3.0] - 2026-01-31 (Current Build)
+
+### 🚨 CRITICAL: Multi-Day Trend Detection + Urgency Escalation
+
+**Problem Fixed:** AI was doing ONE-DAY comparisons, not showing full patient trajectory
+
+**What Changed:**
+
+#### AIMemoryContext.swift - Enhanced Vital Trend Display
+- Calculates **% change from BASELINE** (first reading), not just yesterday
+- Adds severity flags: 🚨 CRITICAL, ⚠️ CONCERNING, 📈 Watch closely
+- Different thresholds per vital type:
+  - Creatinine: ANY increase flagged, >25% = serious, >50% = critical
+  - Oxygen liters: INCREASING is bad (patient needs more support)
+  - Temperature: 99.5+ = low-grade fever, 100.5+ = fever
+  - WBC: Rising after decline = possible infection
+- Shows full trajectory: `1.2 → 1.5 → 1.8 → 1.9 (+58% from baseline) ⚠️ CONCERNING`
+
+#### OpenAIService.swift - Rewrote Analysis Prompt
+- **MULTI-DAY TREND ANALYSIS** is now #1 priority
+- Must report FULL trajectory (X → Y → Z), not just "up from yesterday"
+- **URGENCY ESCALATION** rules:
+  - ONE vital slightly off → Note calmly
+  - ONE vital >25% from baseline → Flag with ⚠️
+  - MULTIPLE vitals trending wrong → Urgent language, call out pattern
+  - ICU transfer or REJECTION → LEAD WITH IT, this is major news
+- **MISSING INFORMATION DETECTION**: If bronch was ordered but results not mentioned, ASK
+- **RED FLAG TRIGGERS**: A2 rejection, ICU transfer, fever, nephrology consult
+- Questions prioritized: Missing results FIRST, then concerning trends
+
+### 🧪 Test Scripts Created
+- `TEST_SCRIPTS_ANOMALY_DETECTION.md` - Days 5-10 stress test sequence
+- Tests: subtle lab shifts, hidden concerns, missing info, buried bombshells
+- Success criteria: AI must catch ALL red flags, escalate urgency appropriately
+
+### 📝 Documentation
+- `MEMORY_LOOP_AUDIT.md` - 5 bugs found and fixed in learning loop
+
+---
+
+## [0.2.0] - 2026-01-26
 
 ### ✅ Working Features
 - **Recording**: Tap mic to record, tap stop (red button) to end
