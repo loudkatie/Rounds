@@ -1,6 +1,46 @@
 # Rounds AI - Changelog
 
-## [0.3.0] - 2026-01-31 (Current Build)
+## [0.3.1] - 2026-01-31 (Current Build)
+
+### 🧠 UNIVERSAL PROMPT REWRITE - "Genius Logic" Update
+
+**Goal:** Make the AI smarter without being transplant-specific. Works for ANY patient scenario.
+
+**What Changed:**
+
+#### OpenAIService.swift - Complete Prompt Overhaul
+- **THINKING SCAFFOLD**: AI now works through Extract → Compare → Prioritize → Write
+  - Prevents buried findings (like Day 10 BAL infection)
+  - Forces structured reasoning before writing response
+- **FUNCTIONAL STATUS TRACKING**: Now notices eating, mobility, mental status
+  - "Patient refusing PT + not eating + sleepy = declining overall"
+  - Often earliest warning sign before vitals change
+- **SPEAKABLE QUESTIONS**: Follow-ups are complete sentences caregiver can read aloud
+  - OLD: "Ask about the rejection"
+  - NEW: "The creatinine went from 1.2 to 1.9 over four days — is that causing the kidney stress, or is something else going on?"
+- **DOCTOR MINIMIZATION DETECTOR**: Flags when soft language contradicts facts
+  - "They're calling it a 'speed bump,' but transferring to ICU suggests they're taking it seriously"
+- **UNCERTAINTIES FIELD**: AI is honest about what it couldn't fully understand
+  - Builds trust, gives caregiver specific things to clarify
+- **SEVERITY SCORE**: `todayInOneWord` field for instant gut check
+  - Values: stable, improving, watch, concerning, urgent, uncertain
+
+#### RoundsAnalysis.swift - New Model Fields
+- `todayInOneWord`: Severity at a glance
+- `uncertainties`: What AI couldn't fully parse
+- `functionalStatus`: eating/mobility/mental/overallTrend
+- `newFactsLearned`, `concerns`, `patterns`, `dayNumber`
+
+#### Temperature: 0.7 → 0.3
+- More consistent outputs for medical analysis
+- Less creative variance, more reliability
+
+### 🔙 Safe Rollback Point
+If issues arise: `git checkout c8ec9c0` (v0.3.0-backup)
+
+---
+
+## [0.3.0] - 2026-01-31
 
 ### 🚨 CRITICAL: Multi-Day Trend Detection + Urgency Escalation
 
