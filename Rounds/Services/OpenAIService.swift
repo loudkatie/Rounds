@@ -339,11 +339,11 @@ final class OpenAIService: ObservableObject {
             ],
             
             "followUpQuestions": [
-                "FIRST: Ask about MISSING RESULTS from previous days (bronch washings, cultures, etc.)",
-                "SECOND: Ask about the most concerning TREND (e.g., 'Creatinine has increased 50% - what's causing this?')",
-                "THIRD: Connect the dots: 'With kidney issues AND increasing oxygen - is this rejection?'",
-                "Ask about things doctors SAID they would monitor but didn't update on",
-                "NOT generic questions - questions about THIS patient's specific trajectory"
+                "Ask about MISSING RESULTS that were expected (bronch cultures, biopsy results, lab tests mentioned previously)",
+                "Specific question about the most concerning trend with context: 'The creatinine has gone from 1.2 to 1.9 over 4 days - what's causing this?'",
+                "Connect multiple issues: 'With the kidney stress AND increasing oxygen needs, could this be rejection?'",
+                "Ask about next steps: 'What would need to happen for Don to move back to a regular floor?'",
+                "DO NOT use generic questions - every question should reference THIS patient's specific data or situation"
             ],
             
             "newFactsLearned": ["New info about \(patientName) to remember for future sessions"],
