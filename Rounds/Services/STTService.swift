@@ -126,14 +126,15 @@ final class STTService: ObservableObject {
     func stopTranscription() {
         guard isTranscribing else { return }
         
+        isTranscribing = false  // Set immediately to prevent race conditions
+        
         audioEngine?.stop()
         audioEngine?.inputNode.removeTap(onBus: 0)
         recognitionRequest?.endAudio()
         
-        // Give it a moment to finalize, then cleanup
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            self?.cleanup()
-        }
+        // Cleanup immediately instead of delayed - prevents race condition
+        // when user clicks "Continue Recording" quickly
+        cleanup()
         
         print("[STTService] Stopped transcription")
     }
@@ -148,12 +149,13 @@ final class STTService: ObservableObject {
 
     private func cleanup() {
         // Nil out all references to free memory
+        // Note: Safe to call multiple times
         recognitionRequest = nil
         recognitionTask = nil
         audioEngine = nil  // Release the engine entirely
         isTranscribing = false
         
-        // Deactivate audio session
+        // Deactivate audio session (ignore errors - may already be inactive)
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
 }

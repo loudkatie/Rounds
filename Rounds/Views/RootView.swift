@@ -32,8 +32,8 @@ struct RootView: View {
             }
         }
         .onAppear {
-            // Show splash for 2 seconds
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            // Show splash for 2.5 seconds (extended for readability)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
                 withAnimation(.easeInOut(duration: 0.5)) {
                     showSplash = false
                     // Check if user has completed onboarding

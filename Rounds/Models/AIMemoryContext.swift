@@ -203,15 +203,67 @@ struct AIMemoryContext: Codable {
             context += "\n"
         }
         
-        // Vital trends
+        // Vital trends - CRITICAL for detecting anomalies
         if !vitalTrends.isEmpty {
-            context += "VITAL SIGN TRENDS:\n"
+            context += "🔴 VITAL SIGN TRENDS - COMPARE CURRENT TO BASELINE:\n"
             for (name, readings) in vitalTrends {
                 if readings.count >= 2 {
-                    let values = readings.suffix(5).map { 
+                    // Show full trend with arrow notation
+                    let values = readings.suffix(10).map { 
                         String(format: "%.1f", $0.value) + ($0.unit ?? "")
                     }.joined(separator: " → ")
-                    context += "- \(name): \(values)\n"
+                    
+                    // Calculate % change from BASELINE (first reading)
+                    let baseline = readings.first!.value
+                    let current = readings.last!.value
+                    let percentChange = ((current - baseline) / baseline) * 100
+                    
+                    // Determine severity
+                    var severity = ""
+                    let absChange = abs(percentChange)
+                    
+                    // Different thresholds for different vitals
+                    let isConcerning: Bool
+                    if name.lowercased().contains("creatinine") {
+                        // Creatinine: ANY increase is concerning, >25% is serious
+                        isConcerning = current > baseline
+                        if percentChange > 50 { severity = "🚨 CRITICAL" }
+                        else if percentChange > 25 { severity = "⚠️ CONCERNING" }
+                        else if percentChange > 10 { severity = "📈 Watch closely" }
+                    } else if name.lowercased().contains("oxygen") && name.lowercased().contains("liter") {
+                        // Oxygen: INCREASING liters is BAD (means patient needs more support)
+                        isConcerning = current > baseline
+                        if current >= 4 { severity = "🚨 HIGH SUPPORT" }
+                        else if current > baseline { severity = "⚠️ INCREASING" }
+                    } else if name.lowercased().contains("temp") {
+                        // Temperature: Rising toward fever is concerning
+                        isConcerning = current > 99.0
+                        if current >= 100.5 { severity = "🚨 FEVER" }
+                        else if current >= 99.5 { severity = "⚠️ LOW-GRADE FEVER" }
+                        else if current > baseline && current > 98.6 { severity = "📈 Trending up" }
+                    } else if name.lowercased().contains("white") || name.lowercased().contains("wbc") {
+                        // WBC: Rising after initial decline = infection
+                        isConcerning = current > 10.0 || (readings.count > 2 && current > readings[readings.count - 2].value)
+                        if current > 12 { severity = "🚨 ELEVATED" }
+                        else if current > 10 { severity = "⚠️ Watch for infection" }
+                    } else {
+                        isConcerning = absChange > 20
+                    }
+                    
+                    // Build the output line
+                    var line = "- \(name): \(values)"
+                    if readings.count >= 2 {
+                        let changeStr = percentChange >= 0 ? "+\(String(format: "%.0f", percentChange))%" : "\(String(format: "%.0f", percentChange))%"
+                        line += " (\(changeStr) from baseline)"
+                    }
+                    if !severity.isEmpty {
+                        line += " \(severity)"
+                    }
+                    context += "\(line)\n"
+                    
+                } else if readings.count == 1 {
+                    let reading = readings[0]
+                    context += "- \(name): \(String(format: "%.1f", reading.value))\(reading.unit ?? "") (BASELINE - first reading)\n"
                 }
             }
             context += "\n"
@@ -244,8 +296,21 @@ struct AIMemoryContext: Codable {
                     context += " - Day \(day)"
                 }
                 context += "]\n"
+                
+                // Show key points
                 for point in session.keyPoints.prefix(3) {
                     context += "  • \(point)\n"
+                }
+                
+                // Show medical values from this session (CRITICAL for trend detection)
+                if !session.medicalValues.isEmpty {
+                    let valuesStr = session.medicalValues.map { "\($0.key): \($0.value)" }.joined(separator: ", ")
+                    context += "  📊 Values: \(valuesStr)\n"
+                }
+                
+                // Show concerns from this session
+                if !session.concerns.isEmpty {
+                    context += "  ⚠️ Concerns: \(session.concerns.joined(separator: "; "))\n"
                 }
             }
             context += "\n"

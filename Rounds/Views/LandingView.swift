@@ -24,7 +24,14 @@ struct LandingView: View {
             ScrollViewReader { scrollProxy in
                 ScrollView {
                     VStack(spacing: 0) {
-                        if viewModel.analysis != nil {
+                        // Top safe area padding
+                        Color.clear.frame(height: 12)
+                        
+                        // Show RecordingView when actively recording OR when no analysis yet
+                        // Show ResultsView only when not recording AND have analysis
+                        if viewModel.isSessionActive {
+                            RecordingView(viewModel: viewModel)
+                        } else if viewModel.analysis != nil {
                             ResultsView(
                                 viewModel: viewModel,
                                 profileStore: profileStore,
@@ -39,6 +46,7 @@ struct LandingView: View {
                         }
                         Spacer().frame(height: 100)
                     }
+                    .padding(.top, 1) // Prevents content from going behind status bar
                 }
                 .scrollDismissesKeyboard(.interactively)
             }
@@ -52,6 +60,7 @@ struct LandingView: View {
             )
         }
         .background(Color.white)
+        .ignoresSafeArea(edges: .bottom) // Only ignore bottom for footer
         .onTapGesture { isFollowUpFocused = false }
         .sheet(isPresented: $showPreviousRounds) {
             PreviousRoundsView(viewModel: viewModel, sessionStore: sessionStore)
@@ -60,7 +69,7 @@ struct LandingView: View {
             AccountSheet(profileStore: profileStore)
         }
         .sheet(isPresented: $showShareSheet) {
-            ShareSheet(text: formatShareText(), subject: shareSubject())
+            ShareSheet(text: formatShareText(), htmlText: formatShareHTML(), subject: shareSubject())
         }
         .sheet(isPresented: $showFullTranscript) {
             TranscriptSheet(transcript: viewModel.liveTranscript, patientName: profileStore.patientName, date: viewModel.currentSession?.startTime ?? Date())
@@ -68,7 +77,7 @@ struct LandingView: View {
     }
     
     private func shareSubject() -> String {
-        "\(profileStore.patientName)'s Health Appointment Recap - \(dayOfWeek()), \(shortDate())"
+        "🩺 \(profileStore.patientName)'s Appointment Recap - \(dayOfWeek()) \(shortDate())"
     }
     
     private func dayOfWeek() -> String {
@@ -87,24 +96,95 @@ struct LandingView: View {
         let day = dayOfWeek()
         let date = shortDate()
         
-        var text = "📋 \(patient)'s Health Appointment Recap - \(day), \(date)\n\n"
-        text += "Here's a recap of \(patient)'s \(day) health meeting:\n\n"
+        // Cleaner, shorter title
+        var text = "🩺 \(patient)'s Appointment Recap - \(day) \(date)\n\n"
         
         if let a = viewModel.analysis {
             if !a.summaryPoints.isEmpty {
-                text += "🔑 KEY POINTS\n\n"
-                for p in a.summaryPoints { text += "• \(p.replacingOccurrences(of: "**", with: ""))\n\n" }
+                text += "KEY POINTS:\n\n"
+                for p in a.summaryPoints { 
+                    text += "• \(p.replacingOccurrences(of: "**", with: ""))\n\n" 
+                }
             }
             if !a.explanation.isEmpty {
-                text += "💬 WHAT WE DISCUSSED\n\n\(a.explanation.replacingOccurrences(of: "**", with: ""))\n\n"
+                text += "WHAT WE DISCUSSED:\n\n"
+                // Split into paragraphs and add spacing between each
+                let paragraphs = a.explanation.replacingOccurrences(of: "**", with: "")
+                    .components(separatedBy: "\n\n")
+                    .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+                for para in paragraphs {
+                    text += "\(para.trimmingCharacters(in: .whitespaces))\n\n"
+                }
             }
             if !a.followUpQuestions.isEmpty {
-                text += "❓ QUESTIONS TO CONSIDER\n\n"
-                for (i, q) in a.followUpQuestions.enumerated() { text += "\(i+1). \(q)\n\n" }
+                text += "QUESTIONS TO CONSIDER:\n\n"
+                for (i, q) in a.followUpQuestions.enumerated() { 
+                    text += "\(i+1). \(q)\n\n" 
+                }
             }
         }
         text += "— Sent by \(caregiver) via Rounds AI 💙"
         return text
+    }
+    
+    private func formatShareHTML() -> String {
+        let patient = profileStore.patientName
+        let caregiver = profileStore.caregiverName
+        let day = dayOfWeek()
+        let date = shortDate()
+        
+        var html = """
+        <html>
+        <head>
+        <style>
+            body { font-family: -apple-system, sans-serif; font-size: 16px; line-height: 1.5; color: #333; }
+            h1 { font-size: 22px; color: #1a1a1a; margin-bottom: 20px; }
+            h2 { font-size: 18px; color: #2563eb; margin-top: 24px; margin-bottom: 12px; border-bottom: 1px solid #e5e7eb; padding-bottom: 4px; }
+            p { margin: 12px 0; }
+            ul { margin: 12px 0; padding-left: 20px; }
+            li { margin: 8px 0; }
+            .footer { margin-top: 30px; color: #666; font-style: italic; }
+        </style>
+        </head>
+        <body>
+        <h1>🩺 \(patient)'s Appointment Recap — \(day) \(date)</h1>
+        """
+        
+        if let a = viewModel.analysis {
+            if !a.summaryPoints.isEmpty {
+                html += "<h2>🔑 Key Points</h2><ul>"
+                for p in a.summaryPoints { 
+                    let cleaned = p.replacingOccurrences(of: "**", with: "")
+                    html += "<li>\(cleaned)</li>" 
+                }
+                html += "</ul>"
+            }
+            if !a.explanation.isEmpty {
+                html += "<h2>💬 What We Discussed</h2>"
+                let paragraphs = a.explanation
+                    .replacingOccurrences(of: "**", with: "<strong>")
+                    .replacingOccurrences(of: "**", with: "</strong>")
+                    .components(separatedBy: "\n\n")
+                    .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
+                for para in paragraphs {
+                    html += "<p>\(para.trimmingCharacters(in: .whitespaces))</p>"
+                }
+            }
+            if !a.followUpQuestions.isEmpty {
+                html += "<h2>❓ Questions to Consider</h2><ol>"
+                for q in a.followUpQuestions { 
+                    html += "<li>\(q)</li>" 
+                }
+                html += "</ol>"
+            }
+        }
+        
+        html += """
+        <p class="footer">— Sent by \(caregiver) via Rounds AI 💙</p>
+        </body>
+        </html>
+        """
+        return html
     }
 }
 
@@ -309,11 +389,12 @@ private struct ResultsView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(.top, 16)
+            .id("top") // Anchor for scroll-to-top
             
             // REPORT TITLE - Bold with emoji!
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 8) {
-                    Text("✨")
+                    Text("🩺")
                         .font(.system(size: 26))
                     Text("\(profileStore.patientName)'s \(dayOfWeek) Recap")
                         .font(.system(size: 24, weight: .bold))
@@ -325,16 +406,16 @@ private struct ResultsView: View {
             }
             .padding(.horizontal, 24)
             
-            // Continue Recording
+            // Continue Recording - clearer action text
             if viewModel.isInSessionChain {
-                ActionButton(title: "Continue \(dayOfWeek)'s Recording", icon: "mic.badge.plus") {
+                ActionButton(title: "Continue Recording", icon: "🎤") {
                     Task { await viewModel.startSession() }
                 }
                 .padding(.horizontal, 24)
             }
             
-            // View Transcript
-            ActionButton(title: "View Full Transcript", icon: "doc.text") {
+            // View Transcript - emoji
+            ActionButton(title: "View Full Transcript", icon: "📄") {
                 showFullTranscript = true
             }
             .padding(.horizontal, 24)
@@ -417,26 +498,30 @@ private struct ResultsView: View {
                 .padding(.horizontal, 24)
             }
 
-            // Ask more
-            ActionButton(title: "Have more questions?", icon: "questionmark.circle") {
-                isFollowUpFocused.wrappedValue = true
-            }
-            .padding(.horizontal, 24)
-            
-            HStack(spacing: 12) {
-                TextField("Ask Rounds AI anything...", text: $followUpText)
-                    .padding(16)
-                    .background(RoundsColor.moduleBackground)
-                    .cornerRadius(14)
-                    .focused(isFollowUpFocused)
-                    .onSubmit { sendFollowUp() }
+            // Ask Rounds AI - Combined module with header and input
+            ModuleCard(title: "💭 Still Have Questions?") {
+                VStack(spacing: 12) {
+                    Text("Ask Rounds AI anything about today's visit")
+                        .font(.subheadline)
+                        .foregroundColor(RoundsColor.textMuted)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    HStack(spacing: 12) {
+                        TextField("Type your question...", text: $followUpText)
+                            .padding(14)
+                            .background(Color.white)
+                            .cornerRadius(12)
+                            .focused(isFollowUpFocused)
+                            .onSubmit { sendFollowUp() }
 
-                Button { sendFollowUp() } label: {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(.system(size: 40))
-                        .foregroundColor(followUpText.isEmpty ? .gray : RoundsColor.buttonBlue)
+                        Button { sendFollowUp() } label: {
+                            Image(systemName: "arrow.up.circle.fill")
+                                .font(.system(size: 36))
+                                .foregroundColor(followUpText.isEmpty ? .gray.opacity(0.5) : RoundsColor.buttonBlue)
+                        }
+                        .disabled(followUpText.isEmpty || viewModel.isAnalyzing)
+                    }
                 }
-                .disabled(followUpText.isEmpty || viewModel.isAnalyzing)
             }
             .padding(.horizontal, 24)
             .id("followUp")
@@ -449,9 +534,9 @@ private struct ResultsView: View {
                 .padding(.horizontal, 24)
             }
 
-            // Continue Recording (bottom)
+            // Continue Recording (bottom) - emoji
             if viewModel.isInSessionChain {
-                ActionButton(title: "Continue \(dayOfWeek)'s Recording", icon: "mic.badge.plus") {
+                ActionButton(title: "Keep Recording", icon: "🎤") {
                     Task { await viewModel.startSession() }
                 }
                 .padding(.horizontal, 24)
@@ -470,12 +555,38 @@ private struct ResultsView: View {
             }
             .padding(.horizontal, 24)
 
+            // Start Fresh Session - now a proper button
             Button { viewModel.discardRecording() } label: {
-                Text("Start Fresh Session")
-                    .font(.subheadline)
-                    .foregroundColor(RoundsColor.textMuted)
+                HStack {
+                    Image(systemName: "arrow.counterclockwise")
+                        .font(.system(size: 16))
+                    Text("Start Fresh Session")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                }
+                .foregroundColor(RoundsColor.textMuted)
+                .padding(.vertical, 12)
+                .padding(.horizontal, 20)
+                .background(Color(UIColor.systemGray6))
+                .cornerRadius(10)
             }
-            .frame(maxWidth: .infinity)
+            .padding(.top, 8)
+            
+            // Scroll to top button
+            Button {
+                withAnimation { scrollProxy.scrollTo("top", anchor: .top) }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.up")
+                        .font(.system(size: 14, weight: .semibold))
+                    Text("Back to Top")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                }
+                .foregroundColor(RoundsColor.textMuted)
+                .padding(.vertical, 10)
+                .padding(.horizontal, 16)
+            }
             .padding(.top, 8)
         }
     }
@@ -520,19 +631,29 @@ private struct ModuleCard<Content: View>: View {
     }
 }
 
-// MARK: - Action Button
+// MARK: - Action Button (supports both SF Symbols and emoji)
 
 private struct ActionButton: View {
     let title: String
-    let icon: String
+    let icon: String  // Can be SF Symbol name OR emoji
     let action: () -> Void
+    
+    private var isEmoji: Bool {
+        // Emoji strings are typically 1-2 characters and don't contain only ASCII
+        icon.count <= 4 && icon.unicodeScalars.first.map { !$0.isASCII } == true
+    }
     
     var body: some View {
         Button(action: action) {
             HStack {
-                Image(systemName: icon)
-                    .font(.system(size: 18))
-                    .foregroundColor(RoundsColor.buttonBlue)
+                if isEmoji {
+                    Text(icon)
+                        .font(.system(size: 20))
+                } else {
+                    Image(systemName: icon)
+                        .font(.system(size: 18))
+                        .foregroundColor(RoundsColor.buttonBlue)
+                }
                 Text(title)
                     .font(.body)
                     .fontWeight(.semibold)
@@ -561,14 +682,15 @@ private struct FooterBar: View {
         VStack(spacing: 0) {
             Divider()
             HStack(spacing: 0) {
-                // Archive / Past Sessions
+                // Archive / History
                 if hasHistory {
                     Button { showPreviousRounds = true } label: {
                         VStack(spacing: 4) {
                             Image(systemName: "clock.arrow.circlepath")
-                            Text("Past Sessions")
+                                .font(.system(size: 22))
+                            Text("History")
+                                .font(.system(size: 10))
                         }
-                        .font(.caption2)
                         .foregroundColor(.gray)
                     }
                     .frame(maxWidth: .infinity)
@@ -578,9 +700,10 @@ private struct FooterBar: View {
                 if hasActiveSession {
                     VStack(spacing: 4) {
                         Image(systemName: "waveform.circle.fill")
+                            .font(.system(size: 22))
                         Text("Active")
+                            .font(.system(size: 10))
                     }
-                    .font(.caption2)
                     .foregroundColor(RoundsColor.buttonBlue)
                     .frame(maxWidth: .infinity)
                 }
@@ -589,18 +712,25 @@ private struct FooterBar: View {
                 Button { showAccount = true } label: {
                     VStack(spacing: 4) {
                         Image(systemName: "person.circle")
+                            .font(.system(size: 22))
                         Text("Account")
+                            .font(.system(size: 10))
                     }
-                    .font(.caption2)
                     .foregroundColor(.gray)
                 }
                 .frame(maxWidth: .infinity)
                 
-                // Powered by LOUD
+                // Powered by Loud Labs - stacked
                 Link(destination: URL(string: "https://loudlabs.xyz")!) {
-                    VStack(spacing: 2) {
-                        Text("powered by").font(.system(size: 8))
-                        Text("LOUD").font(.system(size: 11, weight: .black))
+                    VStack(spacing: 0) {
+                        Text("powered by")
+                            .font(.system(size: 8))
+                        VStack(spacing: -2) {
+                            Text("Loud")
+                                .font(.system(size: 11, weight: .black))
+                            Text("Labs")
+                                .font(.system(size: 11, weight: .black))
+                        }
                     }
                     .foregroundColor(.gray)
                 }
@@ -643,21 +773,44 @@ private struct TranscriptSheet: View {
 
 struct ShareSheet: UIViewControllerRepresentable {
     let text: String
+    let htmlText: String
     var subject: String = ""
     
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: [ShareItem(text: text, subject: subject)], applicationActivities: nil)
+        UIActivityViewController(activityItems: [ShareItem(text: text, htmlText: htmlText, subject: subject)], applicationActivities: nil)
     }
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 class ShareItem: NSObject, UIActivityItemSource {
     let text: String
+    let htmlText: String
     let subject: String
-    init(text: String, subject: String) { self.text = text; self.subject = subject }
+    
+    init(text: String, htmlText: String, subject: String) { 
+        self.text = text
+        self.htmlText = htmlText
+        self.subject = subject 
+    }
+    
     func activityViewControllerPlaceholderItem(_ c: UIActivityViewController) -> Any { text }
-    func activityViewController(_ c: UIActivityViewController, itemForActivityType t: UIActivity.ActivityType?) -> Any? { text }
+    
+    func activityViewController(_ c: UIActivityViewController, itemForActivityType t: UIActivity.ActivityType?) -> Any? { 
+        // Use HTML for email, plain text for everything else
+        if t == .mail {
+            return htmlText
+        }
+        return text 
+    }
+    
     func activityViewController(_ c: UIActivityViewController, subjectForActivityType t: UIActivity.ActivityType?) -> String { subject }
+    
+    func activityViewController(_ c: UIActivityViewController, dataTypeIdentifierForActivityType t: UIActivity.ActivityType?) -> String {
+        if t == .mail {
+            return "public.html"
+        }
+        return "public.plain-text"
+    }
 }
 
 // MARK: - Account Sheet
@@ -665,6 +818,8 @@ class ShareItem: NSObject, UIActivityItemSource {
 private struct AccountSheet: View {
     @ObservedObject var profileStore: ProfileStore
     @Environment(\.dismiss) private var dismiss
+    @State private var showClearConfirm = false
+    @State private var showResetConfirm = false
     
     var body: some View {
         NavigationView {
@@ -693,6 +848,21 @@ private struct AccountSheet: View {
                     }
                 }
                 
+                Section("Memory") {
+                    let sessionCount = AIMemoryStore.shared.memory.sessions.count
+                    HStack {
+                        Text("Recorded Sessions")
+                        Spacer()
+                        Text("\(sessionCount)")
+                            .foregroundColor(.gray)
+                    }
+                    
+                    Button("Clear Medical History") {
+                        showClearConfirm = true
+                    }
+                    .foregroundColor(.orange)
+                }
+                
                 Section("App") {
                     HStack {
                         Text("Version")
@@ -703,9 +873,8 @@ private struct AccountSheet: View {
                 }
                 
                 Section {
-                    Button("Reset Onboarding") {
-                        profileStore.resetProfile()
-                        dismiss()
+                    Button("Reset Everything") {
+                        showResetConfirm = true
                     }
                     .foregroundColor(.red)
                 }
@@ -717,6 +886,24 @@ private struct AccountSheet: View {
                     Button("Done") { dismiss() }
                 }
             }
+            .alert("Clear Medical History?", isPresented: $showClearConfirm) {
+                Button("Cancel", role: .cancel) { }
+                Button("Clear", role: .destructive) {
+                    AIMemoryStore.shared.resetMemory()
+                }
+            } message: {
+                Text("This will erase all learned medical facts, vital trends, and session history. Your profile will remain.")
+            }
+            .alert("Reset Everything?", isPresented: $showResetConfirm) {
+                Button("Cancel", role: .cancel) { }
+                Button("Reset", role: .destructive) {
+                    AIMemoryStore.shared.resetMemory()
+                    profileStore.resetProfile()
+                    dismiss()
+                }
+            } message: {
+                Text("This will erase all data including your profile. You'll need to complete onboarding again.")
+            }
         }
     }
 }
@@ -724,8 +911,23 @@ private struct AccountSheet: View {
 // MARK: - Helper: Format text into paragraphs
 
 private func formatIntoParagraphs(_ text: String) -> String {
-    // Split into sentences and group into paragraphs (2-3 sentences each)
-    let sentences = text.components(separatedBy: ". ")
+    // First, normalize spaces and newlines - remove double spaces
+    var cleaned = text
+        .replacingOccurrences(of: "  ", with: " ")   // double space → single
+        .replacingOccurrences(of: "\n\n\n", with: "\n\n") // triple newline → double
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+    
+    // If text already has paragraph breaks (from GPT), preserve them
+    if cleaned.contains("\n\n") {
+        // Clean each paragraph individually
+        let paragraphs = cleaned.components(separatedBy: "\n\n")
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        return paragraphs.joined(separator: "\n\n")
+    }
+    
+    // Otherwise, split into sentences and group into paragraphs
+    let sentences = cleaned.components(separatedBy: ". ")
     var result = ""
     var count = 0
     
@@ -734,13 +936,15 @@ private func formatIntoParagraphs(_ text: String) -> String {
         if trimmed.isEmpty { continue }
         
         result += trimmed
-        if !trimmed.hasSuffix(".") { result += "." }
+        if !trimmed.hasSuffix(".") && !trimmed.hasSuffix("?") && !trimmed.hasSuffix("!") { 
+            result += "." 
+        }
         result += " "
         count += 1
         
         // Add paragraph break every 2-3 sentences
         if count >= 2 {
-            result += "\n\n"
+            result = result.trimmingCharacters(in: .whitespaces) + "\n\n"
             count = 0
         }
     }
