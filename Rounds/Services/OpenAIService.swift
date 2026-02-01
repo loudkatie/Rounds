@@ -47,7 +47,11 @@ struct ExtendedAnalysis: Codable {
     let vitalValues: [String: Double]?
     let concerns: [String]?
     let patterns: [String]?
-    let dayNumber: Int?  // Extract "day 5 post-transplant" → 5
+    let dayNumber: Int?
+    // v0.3.1 additions
+    let todayInOneWord: String?
+    let uncertainties: [String]?
+    let functionalStatus: FunctionalStatus?
     
     // Custom decoder to handle flexible JSON from GPT
     enum CodingKeys: String, CodingKey {
@@ -59,6 +63,9 @@ struct ExtendedAnalysis: Codable {
         case concerns
         case patterns
         case dayNumber
+        case todayInOneWord
+        case uncertainties
+        case functionalStatus
     }
     
     init(from decoder: Decoder) throws {
@@ -74,6 +81,9 @@ struct ExtendedAnalysis: Codable {
         concerns = try? container.decode([String].self, forKey: .concerns)
         patterns = try? container.decode([String].self, forKey: .patterns)
         dayNumber = try? container.decode(Int.self, forKey: .dayNumber)
+        todayInOneWord = try? container.decode(String.self, forKey: .todayInOneWord)
+        uncertainties = try? container.decode([String].self, forKey: .uncertainties)
+        functionalStatus = try? container.decode(FunctionalStatus.self, forKey: .functionalStatus)
         
         // vitalValues might come as [String: Double] or [String: Any] - handle flexibly
         if let vitals = try? container.decode([String: Double].self, forKey: .vitalValues) {
@@ -84,7 +94,9 @@ struct ExtendedAnalysis: Codable {
     }
     
     init(explanation: String, summaryPoints: [String], followUpQuestions: [String],
-         newFactsLearned: [String]?, vitalValues: [String: Double]?, concerns: [String]?, patterns: [String]?, dayNumber: Int?) {
+         newFactsLearned: [String]?, vitalValues: [String: Double]?, concerns: [String]?, 
+         patterns: [String]?, dayNumber: Int?, todayInOneWord: String? = nil, 
+         uncertainties: [String]? = nil, functionalStatus: FunctionalStatus? = nil) {
         self.explanation = explanation
         self.summaryPoints = summaryPoints
         self.followUpQuestions = followUpQuestions
@@ -93,6 +105,9 @@ struct ExtendedAnalysis: Codable {
         self.concerns = concerns
         self.patterns = patterns
         self.dayNumber = dayNumber
+        self.todayInOneWord = todayInOneWord
+        self.uncertainties = uncertainties
+        self.functionalStatus = functionalStatus
     }
 }
 
@@ -165,7 +180,14 @@ final class OpenAIService: ObservableObject {
             return RoundsAnalysis(
                 explanation: analysis.explanation,
                 summaryPoints: analysis.summaryPoints,
-                followUpQuestions: analysis.followUpQuestions
+                followUpQuestions: analysis.followUpQuestions,
+                todayInOneWord: analysis.todayInOneWord,
+                uncertainties: analysis.uncertainties,
+                functionalStatus: analysis.functionalStatus,
+                newFactsLearned: analysis.newFactsLearned,
+                concerns: analysis.concerns,
+                patterns: analysis.patterns,
+                dayNumber: analysis.dayNumber
             )
         case 429:
             throw OpenAIError.rateLimited
@@ -572,6 +594,21 @@ final class OpenAIService: ObservableObject {
         let patterns = dict["patterns"] as? [String]
         let dayNumber = dict["dayNumber"] as? Int
         
+        // v0.3.1 fields
+        let todayInOneWord = dict["todayInOneWord"] as? String
+        let uncertainties = dict["uncertainties"] as? [String]
+        
+        // Parse functionalStatus nested object
+        var functionalStatus: FunctionalStatus? = nil
+        if let fsDict = dict["functionalStatus"] as? [String: Any] {
+            functionalStatus = FunctionalStatus(
+                eating: fsDict["eating"] as? String,
+                mobility: fsDict["mobility"] as? String,
+                mental: fsDict["mental"] as? String,
+                overallTrend: fsDict["overallTrend"] as? String
+            )
+        }
+        
         // Handle vitalValues - might have null values
         var vitalValues: [String: Double]? = nil
         if let vitalsDict = dict["vitalValues"] as? [String: Any] {
@@ -604,7 +641,10 @@ final class OpenAIService: ObservableObject {
             vitalValues: vitalValues,
             concerns: concerns,
             patterns: patterns,
-            dayNumber: dayNumber
+            dayNumber: dayNumber,
+            todayInOneWord: todayInOneWord,
+            uncertainties: uncertainties,
+            functionalStatus: functionalStatus
         )
     }
     
