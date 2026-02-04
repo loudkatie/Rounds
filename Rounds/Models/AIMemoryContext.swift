@@ -194,10 +194,11 @@ struct AIMemoryContext: Codable {
         }
         context += "\n"
         
-        // Learned facts
+        // Learned facts - SHOW ALL (normalized, so no duplicates)
         if !keyMedicalFacts.isEmpty {
-            context += "MEDICAL FACTS YOU'VE LEARNED:\n"
-            for fact in keyMedicalFacts.suffix(15) {
+            context += "MEDICAL FACTS YOU'VE LEARNED (ALL \(keyMedicalFacts.count)):\n"
+            // BUG FIX: Show ALL facts, not just suffix(15)
+            for fact in keyMedicalFacts {
                 context += "- \(fact)\n"
             }
             context += "\n"
@@ -208,8 +209,8 @@ struct AIMemoryContext: Codable {
             context += "🔴 VITAL SIGN TRENDS - COMPARE CURRENT TO BASELINE:\n"
             for (name, readings) in vitalTrends {
                 if readings.count >= 2 {
-                    // Show full trend with arrow notation
-                    let values = readings.suffix(10).map { 
+                    // BUG FIX: Show FULL trend, not just suffix(10)
+                    let values = readings.map { 
                         String(format: "%.1f", $0.value) + ($0.unit ?? "")
                     }.joined(separator: " → ")
                     
@@ -287,18 +288,36 @@ struct AIMemoryContext: Codable {
             context += "\n"
         }
         
-        // Session history
+        // Session history - BUG FIX: Show ALL sessions, Day 1 baseline ALWAYS included
         if !sessions.isEmpty {
-            context += "PAST SESSION SUMMARIES:\n"
-            for session in sessions.suffix(7) {
+            context += "PAST SESSION SUMMARIES (ALL \(sessions.count) SESSIONS):\n"
+            
+            // CRITICAL: Always show Day 1 first as baseline anchor
+            if let firstSession = sessions.first {
+                context += "\n🏥 [DAY 1 BASELINE - \(firstSession.dateFormatted)"
+                if let day = firstSession.dayNumber {
+                    context += " - Day \(day)"
+                }
+                context += "] — ANCHOR POINT\n"
+                for point in firstSession.keyPoints {
+                    context += "  • \(point)\n"
+                }
+                if !firstSession.medicalValues.isEmpty {
+                    let valuesStr = firstSession.medicalValues.map { "\($0.key): \($0.value)" }.joined(separator: ", ")
+                    context += "  📊 Baseline Values: \(valuesStr)\n"
+                }
+            }
+            
+            // Show ALL remaining sessions (not just suffix(7))
+            for session in sessions.dropFirst() {
                 context += "\n[\(session.dateFormatted)"
                 if let day = session.dayNumber {
                     context += " - Day \(day)"
                 }
                 context += "]\n"
                 
-                // Show key points
-                for point in session.keyPoints.prefix(3) {
+                // BUG FIX: Show ALL key points, not just prefix(3)
+                for point in session.keyPoints {
                     context += "  • \(point)\n"
                 }
                 
@@ -335,7 +354,8 @@ struct AIMemoryContext: Codable {
         if !diagnosis.isEmpty { parts.append("Dx: \(diagnosis)") }
         if let days = daysSinceSurgery { parts.append("Day \(days) post-op") }
         if !keyMedicalFacts.isEmpty {
-            parts.append("Key facts: \(keyMedicalFacts.suffix(5).joined(separator: "; "))")
+            // BUG FIX: Show more facts in summary
+            parts.append("Key facts: \(keyMedicalFacts.suffix(10).joined(separator: "; "))")
         }
         return parts.joined(separator: " | ")
     }

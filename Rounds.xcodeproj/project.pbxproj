@@ -17,15 +17,17 @@
 		85998A3221AFFC0380367731 /* MWDATCamera in Frameworks */ = {isa = PBXBuildFile; productRef = 915A3C829B9327B9C12582E0 /* MWDATCamera */; };
 		95FA16A6A146191FA1E9EBCB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0E70E29DB16097D12CEFCF6 /* ContentView.swift */; };
 		CONFIG0BUILD001122334455 /* Rounds/Config.plist in Resources */ = {isa = PBXBuildFile; fileRef = CONFIG0PLIST001122334455 /* Rounds/Config.plist */; };
+		E26C2A9E2F3162C7008F27B7 /* MedicalTermNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E26C2A9D2F3162C7008F27B7 /* MedicalTermNormalizer.swift */; };
+		E26C2A9F2F3162C7008F27B7 /* FullHistoryContextBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E26C2A9C2F3162C7008F27B7 /* FullHistoryContextBuilder.swift */; };
 		E2BD55E72F258192005CC801 /* UserProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2BD55E52F258192005CC801 /* UserProfile.swift */; };
 		E2BD55E82F258192005CC801 /* RoundsAnalysis.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2BD55E32F258192005CC801 /* RoundsAnalysis.swift */; };
 		E2BD55E92F258192005CC801 /* RecordingSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2BD55E22F258192005CC801 /* RecordingSession.swift */; };
-		E2BD55EF2F2581C2005CC801 /* PreviousRoundsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2BD55ED2F2581C2005CC801 /* PreviousRoundsView.swift */; };
 		E2BD55F92F2582D5005CC801 /* AIMemoryContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2BD55F82F2582D5005CC801 /* AIMemoryContext.swift */; };
-		EF517A2A7DEE82DA91503E35 /* LandingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE6083E5AB193B043FB2E19 /* LandingView.swift */; };
+		E2D360F22F33AC45007DFEE5 /* LandingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2D360F12F33AC45007DFEE5 /* LandingView.swift */; };
+		E2D360F42F33AE87007DFEE5 /* OpenAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2D360F32F33AE87007DFEE5 /* OpenAIService.swift */; };
+		E2D360F62F33AECA007DFEE5 /* PreviousRoundsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2D360F52F33AECA007DFEE5 /* PreviousRoundsView.swift */; };
 		F3349619F86295E1D47A18EE /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6241002C45A88622015BE83 /* SplashView.swift */; };
 		FB18C2C56D2347218F226668 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7A17214D70FD58A0143B31 /* RootView.swift */; };
-		OPENAI_BUILD_001122334455 /* OpenAIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = OPENAI001122334455667788 /* OpenAIService.swift */; };
 		PROFILE_BUILD_01122334455 /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = PROFILE01122334455667788 /* ProfileStore.swift */; };
 		SESSION_BUILD_01122334455 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = SESSION01122334455667788 /* SessionStore.swift */; };
 /* End PBXBuildFile section */
@@ -37,18 +39,20 @@
 		84D5E2CBCF2022821DAF3EA6 /* RoundsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundsApp.swift; sourceTree = "<group>"; };
 		AD3C1324FBF33E2FA99D2D46 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		CBADB6C24348E9029BB6D22C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		CFE6083E5AB193B043FB2E19 /* LandingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandingView.swift; sourceTree = "<group>"; };
 		CONFIG0PLIST001122334455 /* Rounds/Config.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Rounds/Config.plist; sourceTree = "<group>"; };
 		D6241002C45A88622015BE83 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		DE7A17214D70FD58A0143B31 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		E26C2A9C2F3162C7008F27B7 /* FullHistoryContextBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FullHistoryContextBuilder.swift; sourceTree = "<group>"; };
+		E26C2A9D2F3162C7008F27B7 /* MedicalTermNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MedicalTermNormalizer.swift; sourceTree = "<group>"; };
 		E2BD55E22F258192005CC801 /* RecordingSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingSession.swift; sourceTree = "<group>"; };
 		E2BD55E32F258192005CC801 /* RoundsAnalysis.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundsAnalysis.swift; sourceTree = "<group>"; };
 		E2BD55E52F258192005CC801 /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
-		E2BD55ED2F2581C2005CC801 /* PreviousRoundsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviousRoundsView.swift; sourceTree = "<group>"; };
 		E2BD55F82F2582D5005CC801 /* AIMemoryContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIMemoryContext.swift; sourceTree = "<group>"; };
+		E2D360F12F33AC45007DFEE5 /* LandingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandingView.swift; sourceTree = "<group>"; };
+		E2D360F32F33AE87007DFEE5 /* OpenAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIService.swift; sourceTree = "<group>"; };
+		E2D360F52F33AECA007DFEE5 /* PreviousRoundsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviousRoundsView.swift; sourceTree = "<group>"; };
 		EF93D3FFD8451E4E2E0238A4 /* STTService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STTService.swift; sourceTree = "<group>"; };
 		F0E70E29DB16097D12CEFCF6 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		OPENAI001122334455667788 /* OpenAIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenAIService.swift; sourceTree = "<group>"; };
 		PROFILE01122334455667788 /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStore.swift; sourceTree = "<group>"; };
 		SESSION01122334455667788 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -74,11 +78,11 @@
 		0AA0126481C322DABE02BD55 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				CFE6083E5AB193B043FB2E19 /* LandingView.swift */,
+				E2D360F52F33AECA007DFEE5 /* PreviousRoundsView.swift */,
+				E2D360F12F33AC45007DFEE5 /* LandingView.swift */,
 				DE7A17214D70FD58A0143B31 /* RootView.swift */,
 				D6241002C45A88622015BE83 /* SplashView.swift */,
 				E2BD55EC2F2581C2005CC801 /* Onboarding */,
-				E2BD55ED2F2581C2005CC801 /* PreviousRoundsView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -111,20 +115,12 @@
 				F0E70E29DB16097D12CEFCF6 /* ContentView.swift */,
 				CBADB6C24348E9029BB6D22C /* Info.plist */,
 				84D5E2CBCF2022821DAF3EA6 /* RoundsApp.swift */,
-				91934535B4D5F0744EF42456 /* DeviceManagers */,
 				4C3B9B40DFD9050BA73AAEDF /* Models */,
 				E22EEED703755F5114161C58 /* Services */,
 				95157335467B16649E402B10 /* ViewModels */,
 				0AA0126481C322DABE02BD55 /* Views */,
 			);
 			path = Rounds;
-			sourceTree = "<group>";
-		};
-		91934535B4D5F0744EF42456 /* DeviceManagers */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = DeviceManagers;
 			sourceTree = "<group>";
 		};
 		95157335467B16649E402B10 /* ViewModels */ = {
@@ -146,9 +142,11 @@
 		E22EEED703755F5114161C58 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				E2D360F32F33AE87007DFEE5 /* OpenAIService.swift */,
+				E26C2A9C2F3162C7008F27B7 /* FullHistoryContextBuilder.swift */,
+				E26C2A9D2F3162C7008F27B7 /* MedicalTermNormalizer.swift */,
 				SESSION01122334455667788 /* SessionStore.swift */,
 				PROFILE01122334455667788 /* ProfileStore.swift */,
-				OPENAI001122334455667788 /* OpenAIService.swift */,
 				EF93D3FFD8451E4E2E0238A4 /* STTService.swift */,
 			);
 			path = Services;
@@ -244,20 +242,22 @@
 			files = (
 				7FF479BA06EE34CECFE3DB53 /* Colors.swift in Sources */,
 				95FA16A6A146191FA1E9EBCB /* ContentView.swift in Sources */,
-				EF517A2A7DEE82DA91503E35 /* LandingView.swift in Sources */,
 				E2BD55F92F2582D5005CC801 /* AIMemoryContext.swift in Sources */,
-				E2BD55EF2F2581C2005CC801 /* PreviousRoundsView.swift in Sources */,
 				FB18C2C56D2347218F226668 /* RootView.swift in Sources */,
+				E2D360F42F33AE87007DFEE5 /* OpenAIService.swift in Sources */,
+				E2D360F22F33AC45007DFEE5 /* LandingView.swift in Sources */,
 				28BA9ED5E2CE8D90971787EB /* RoundsApp.swift in Sources */,
 				E2BD55E72F258192005CC801 /* UserProfile.swift in Sources */,
 				E2BD55E82F258192005CC801 /* RoundsAnalysis.swift in Sources */,
+				E26C2A9E2F3162C7008F27B7 /* MedicalTermNormalizer.swift in Sources */,
+				E26C2A9F2F3162C7008F27B7 /* FullHistoryContextBuilder.swift in Sources */,
 				E2BD55E92F258192005CC801 /* RecordingSession.swift in Sources */,
 				03AB9333F128F912DD49B090 /* STTService.swift in Sources */,
 				SESSION_BUILD_01122334455 /* SessionStore.swift in Sources */,
 				PROFILE_BUILD_01122334455 /* ProfileStore.swift in Sources */,
-				OPENAI_BUILD_001122334455 /* OpenAIService.swift in Sources */,
 				F3349619F86295E1D47A18EE /* SplashView.swift in Sources */,
 				0F5624642FC3DEBF636D4E05 /* TranscriptViewModel.swift in Sources */,
+				E2D360F62F33AECA007DFEE5 /* PreviousRoundsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

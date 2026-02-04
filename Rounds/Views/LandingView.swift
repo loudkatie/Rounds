@@ -372,7 +372,7 @@ private struct ResultsView: View {
     }
     
     private var fullDate: String {
-        let f = DateFormatter(); f.dateFormat = "EEE, MMM d, yyyy"
+        let f = DateFormatter(); f.dateFormat = "EEE, MMM d, yyyy 'at' h:mm a"
         return f.string(from: viewModel.currentSession?.startTime ?? Date())
     }
     
@@ -440,13 +440,47 @@ private struct ResultsView: View {
                 .padding(.horizontal, 24)
             }
 
-            // WHAT WE DISCUSSED - with paragraph breaks
+            // WHAT WE DISCUSSED - with Next Steps parsing
             if let a = viewModel.analysis, !a.explanation.isEmpty {
                 ModuleCard(title: "💬 What We Discussed") {
-                    Text(formatIntoParagraphs(a.explanation.replacingOccurrences(of: "**", with: "")))
-                        .font(.body)
-                        .foregroundColor(RoundsColor.textDark)
-                        .lineSpacing(6)
+                    let parsed = parseExplanationWithNextSteps(a.explanation)
+                    
+                    VStack(alignment: .leading, spacing: 16) {
+                        // Main explanation text (before "Next Steps:")
+                        if !parsed.mainText.isEmpty {
+                            Text(formatIntoParagraphs(parsed.mainText))
+                                .font(.body)
+                                .foregroundColor(RoundsColor.textDark)
+                                .lineSpacing(6)
+                        }
+                        
+                        // Next Steps section (if present) - visually distinct
+                        if !parsed.nextSteps.isEmpty {
+                            VStack(alignment: .leading, spacing: 10) {
+                                // Bold header
+                                Text("Next Steps")
+                                    .font(.headline)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(RoundsColor.textDark)
+                                
+                                // Bullet points
+                                ForEach(parsed.nextSteps, id: \.self) { step in
+                                    HStack(alignment: .top, spacing: 8) {
+                                        Text("•")
+                                            .font(.body)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(RoundsColor.buttonBlue)
+                                        Text(step)
+                                            .font(.body)
+                                            .foregroundColor(RoundsColor.textDark)
+                                    }
+                                }
+                            }
+                            .padding(12)
+                            .background(RoundsColor.buttonBlue.opacity(0.08))
+                            .cornerRadius(10)
+                        }
+                    }
                 }
                 .padding(.horizontal, 24)
             }
@@ -950,6 +984,73 @@ private func formatIntoParagraphs(_ text: String) -> String {
     }
     
     return result.trimmingCharacters(in: .whitespacesAndNewlines)
+}
+
+// MARK: - Next Steps Parsing
+
+/// Parsed result from explanation text
+private struct ParsedExplanation {
+    let mainText: String
+    let nextSteps: [String]
+}
+
+/// Parses the explanation text to extract "Next Steps:" section
+/// Returns the main text and an array of next step bullet points
+private func parseExplanationWithNextSteps(_ text: String) -> ParsedExplanation {
+    // Clean up markdown bold markers
+    let cleaned = text.replacingOccurrences(of: "**", with: "")
+    
+    // Look for "Next Steps:" (case insensitive variations)
+    let patterns = ["Next Steps:", "Next steps:", "NEXT STEPS:", "next steps:"]
+    
+    for pattern in patterns {
+        if let range = cleaned.range(of: pattern) {
+            // Split into main text and next steps section
+            let mainText = String(cleaned[..<range.lowerBound])
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            let nextStepsSection = String(cleaned[range.upperBound...])
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            // Parse bullet points from next steps section
+            let nextSteps = parseNextStepsBullets(nextStepsSection)
+            
+            return ParsedExplanation(mainText: mainText, nextSteps: nextSteps)
+        }
+    }
+    
+    // No "Next Steps:" found - return original text
+    return ParsedExplanation(mainText: cleaned, nextSteps: [])
+}
+
+/// Parses bullet points from the next steps section
+/// Handles "• item", "- item", "* item" formats and plain newlines
+private func parseNextStepsBullets(_ text: String) -> [String] {
+    var steps: [String] = []
+    
+    // Split by newlines first
+    let lines = text.components(separatedBy: .newlines)
+    
+    for line in lines {
+        var cleanedLine = line.trimmingCharacters(in: .whitespaces)
+        
+        // Remove leading bullet characters
+        let bulletPrefixes = ["• ", "- ", "* ", "· ", "‣ ", "● "]
+        for prefix in bulletPrefixes {
+            if cleanedLine.hasPrefix(prefix) {
+                cleanedLine = String(cleanedLine.dropFirst(prefix.count))
+                break
+            }
+        }
+        
+        // Skip empty lines
+        cleanedLine = cleanedLine.trimmingCharacters(in: .whitespaces)
+        if !cleanedLine.isEmpty {
+            steps.append(cleanedLine)
+        }
+    }
+    
+    return steps
 }
 
 #Preview {

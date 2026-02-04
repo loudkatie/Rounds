@@ -95,11 +95,18 @@ private struct SessionListView: View {
 
 private struct SessionRowView: View {
     let session: RecordingSession
+    
+    /// Formats date with time for distinguishing multiple recordings per day
+    private var formattedDateWithTime: String {
+        let f = DateFormatter()
+        f.dateFormat = "EEE, MMM d 'at' h:mm a"  // "Mon, Feb 3 at 7:42 AM"
+        return f.string(from: session.startTime)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text(session.formattedDate)
+                Text(formattedDateWithTime)
                     .font(.headline)
                     .foregroundColor(.primary)
 
